@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Graphe</title>
+  
+  
+  <link href="http://yigeyouzia.github.io/atom.xml" rel="self"/>
+  
+  <link href="http://yigeyouzia.github.io/"/>
+  <updated>2022-10-14T13:22:41.903Z</updated>
+  <id>http://yigeyouzia.github.io/</id>
+  
+  <author>
+    <name>Graphecyt</name>
+    
+  </author>
+  
+  <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>paper</title>
+    <link href="http://yigeyouzia.github.io/2022/10/14/paper/"/>
+    <id>http://yigeyouzia.github.io/2022/10/14/paper/</id>
+    <published>2022-10-14T13:22:41.000Z</published>
+    <updated>2022-10-14T13:22:41.903Z</updated>
+    
+    
+    
+    
+    
+  </entry>
+  
+</feed>
