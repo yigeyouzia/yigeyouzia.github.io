@@ -1,0 +1,651 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>rocketMQ笔记 | cyt的笔记屋</title><meta name="author" content="cyt"><meta name="copyright" content="cyt"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="rocketMQ基础知识">
+<meta property="og:type" content="article">
+<meta property="og:title" content="rocketMQ笔记">
+<meta property="og:url" content="https://youcyt.ltd/post/java%E5%AD%A6%E4%B9%A0/%E4%B8%AD%E9%97%B4%E4%BB%B6/rocketMQ%E7%AC%94%E8%AE%B0.html">
+<meta property="og:site_name" content="cyt的笔记屋">
+<meta property="og:description" content="rocketMQ基础知识">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20250929171632722.png">
+<meta property="article:published_time" content="2025-10-09T10:32:06.000Z">
+<meta property="article:modified_time" content="2025-10-09T10:38:21.424Z">
+<meta property="article:author" content="cyt">
+<meta property="article:tag" content="java">
+<meta property="article:tag" content="rocketMQ">
+<meta property="article:tag" content="中间件">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20250929171632722.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "rocketMQ笔记",
+  "url": "https://youcyt.ltd/post/java%E5%AD%A6%E4%B9%A0/%E4%B8%AD%E9%97%B4%E4%BB%B6/rocketMQ%E7%AC%94%E8%AE%B0.html",
+  "image": "https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20250929171632722.png",
+  "datePublished": "2025-10-09T10:32:06.000Z",
+  "dateModified": "2025-10-09T10:38:21.424Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "cyt",
+      "url": "https://youcyt.ltd"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://youcyt.ltd/post/java%E5%AD%A6%E4%B9%A0/%E4%B8%AD%E9%97%B4%E4%BB%B6/rocketMQ%E7%AC%94%E8%AE%B0.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          const hour = new Date().getHours()
+          const isNight = hour <= 6 || hour >= 18
+          if (theme === undefined) isNight ? activateDarkMode() : activateLightMode()
+          else theme === 'light' ? activateLightMode() : activateDarkMode()
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'rocketMQ笔记',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/background.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg" style="background-image: url(/img/bg/gongga.jpg);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/other/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">15</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">19</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg/gongga.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">cyt的笔记屋</span></a><a class="nav-page-title" href="/"><span class="site-name">rocketMQ笔记</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">rocketMQ笔记</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-10-09T10:32:06.000Z" title="发表于 2025-10-09 18:32:06">2025-10-09</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-10-09T10:38:21.424Z" title="更新于 2025-10-09 18:38:21">2025-10-09</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/java/">java</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">4k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>16分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><blockquote>
+<ul>
+<li>教学地址：b站<ul>
+<li><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1AU4y157LX">https://www.bilibili.com/video/BV1AU4y157LX</a></li>
+</ul>
+</li>
+<li>本地使用mq<ul>
+<li><code>cd /Users/cyt/huanjing/java/middle/rocketmq-all-4.8.0-bin-release</code></li>
+<li><code>sh start.sh</code>  开启mq</li>
+<li><code>sh close.sh</code> 关闭mq</li>
+<li><code>cd ../web</code> </li>
+<li><code>java -jar rocketmq-console-ng-2.0.0.jar</code> 开启mq控制台</li>
+</ul>
+</li>
+<li>后续使用docker搭建mq</li>
+</ul>
+</blockquote>
+<h1 id="基本知识"><a href="#基本知识" class="headerlink" title="基本知识"></a>基本知识</h1><h2 id="MQ介绍"><a href="#MQ介绍" class="headerlink" title="MQ介绍"></a>MQ介绍</h2><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20250929162722815.png" alt=" " style="zoom:50%;" />
+
+<h3 id="对比"><a href="#对比" class="headerlink" title="对比"></a>对比</h3><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20250929165657863.png" alt=" " style="zoom:33%;" />
+
+<h3 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h3><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20250929170014361.png" alt=" " style="zoom:50%;" />
+
+<h2 id="优势和劣势"><a href="#优势和劣势" class="headerlink" title="优势和劣势"></a>优势和劣势</h2><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20250929162828669.png" alt=" " style="zoom:50%;" />
+
+<h2 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h2><h3 id="应用解耦"><a href="#应用解耦" class="headerlink" title="应用解耦"></a>应用解耦</h3><blockquote>
+<ul>
+<li><code>提高系统容错性和可维护性</code></li>
+<li>生产者发送消息到MQ</li>
+<li>mq可以复制多份到其他系统</li>
+</ul>
+</blockquote>
+<img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20250929163814688.png" alt=" " style="zoom:50%;" />
+
+<h3 id="异步提速"><a href="#异步提速" class="headerlink" title="异步提速"></a>异步提速</h3><blockquote>
+<ul>
+<li><p><code>提升用户体验和系统吞吐量</code></p>
+</li>
+<li><p>从下单到结果只需要100ms</p>
+<ul>
+<li><p>先发给mq</p>
+</li>
+<li><p>存入mysql</p>
+</li>
+<li><p>后面的200ms不用管</p>
+</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+  <img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20250929164238705.png" alt=" " style="zoom:50%;" />
+
+<h3 id="削峰填谷"><a href="#削峰填谷" class="headerlink" title="削峰填谷"></a>削峰填谷</h3><blockquote>
+<ol>
+<li><code>提高系统稳定性</code></li>
+<li>把mq当做缓存</li>
+<li>10w个请求，从mq里面取数据，放入mysql</li>
+</ol>
+</blockquote>
+<img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20250929164559659.png" alt=" " style="zoom:50%;" />
+
+<h4 id="示意图"><a href="#示意图" class="headerlink" title="示意图"></a>示意图</h4><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20250929164830897.png" alt=" " style="zoom:50%;" />
+
+<h2 id="劣势"><a href="#劣势" class="headerlink" title="劣势"></a>劣势</h2><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20250929165326298.png" alt=" " style="zoom:50%;" />
+
+<h2 id="工作原理（重点）"><a href="#工作原理（重点）" class="headerlink" title="工作原理（重点）"></a>工作原理（重点）</h2><blockquote>
+<ul>
+<li>生产者 消费者 服务器三大集群都要去 <code>命名服务器</code> 注册自己的ip信息</li>
+<li>消费者对服务器集群获取消息有两种方式<ul>
+<li><code>主动拉去消息</code></li>
+<li><code>用监听器</code></li>
+</ul>
+</li>
+<li>为了判断三大集群是否挂掉<ul>
+<li>三大集群设置心跳</li>
+</ul>
+</li>
+<li>消息信息<ul>
+<li>一级 <code>主题Topic</code></li>
+<li>二级分类：<code>标题tag</code></li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20250929171632722.png" alt=" " style="zoom:50%;" />
+
+<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><blockquote>
+<ul>
+<li><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_46111881/article/details/127110518?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522b3f9dadfe714d8126d35743d4131786e%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&request_id=b3f9dadfe714d8126d35743d4131786e&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduend~default-2-127110518-null-null.142%5Ev102%5Epc_search_result_base8&utm_term=mac%20%E5%AE%89%E8%A3%85rocketmq&spm=1018.2226.3001.4187">https://blog.csdn.net/qq_46111881/article/details/127110518?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522b3f9dadfe714d8126d35743d4131786e%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&amp;request_id=b3f9dadfe714d8126d35743d4131786e&amp;biz_id=0&amp;utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduend~default-2-127110518-null-null.142^v102^pc_search_result_base8&amp;utm_term=mac%20%E5%AE%89%E8%A3%85rocketmq&amp;spm=1018.2226.3001.4187</a></p>
+</li>
+<li><pre><code class="language-shell">#这个路径是你rocketmq解压后的文件夹路径
+export rocketMq_home=/Users/cyt/huanjing/java/middle/rocketmq-all-4.8.0-bin-release
+#这个路径是你安装的jdk版本的路径，你需要查看你的jdk版本，改变
+export JAVA_HOME=&quot;/Library/Java/JavaVirtualMachines/jdk1.8.0_321.jdk/Contents/Home&quot;
+
+  export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-17.jdk/Contents/Home
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-8.jdk/Contents/Home
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">* https://blog.csdn.net/qq_41833935/article/details/125315386?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522b3f9dadfe714d8126d35743d4131786e%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&amp;request_id=b3f9dadfe714d8126d35743d4131786e&amp;biz_id=0&amp;utm_medium=distribute.pc_search_result.none-task-blog-2~all~top_positive~default-1-125315386-null-null.142^v102^pc_search_result_base8&amp;utm_term=mac%20%E5%AE%89%E8%A3%85rocketmq&amp;spm=1018.2226.3001.4187</span><br><span class="line"></span><br><span class="line">#  消息发送（重点）</span><br><span class="line"></span><br><span class="line">1. 基于Java环境构建消息发送与消息接收基础程序</span><br><span class="line"></span><br><span class="line">   * 单生产者单消费者</span><br><span class="line"></span><br><span class="line">   * 单生产者多消费者</span><br><span class="line"></span><br><span class="line">   * 多生产者多消费者</span><br><span class="line"></span><br><span class="line">2. 发送不同类型的消息</span><br><span class="line">   1. 同步消息</span><br><span class="line">   2. 异步消息</span><br><span class="line">   3. 单向消息</span><br><span class="line">3. 特殊的消息发送</span><br><span class="line">   1. 延时消息</span><br><span class="line">   2. 批量消息</span><br><span class="line">4. 特殊的消息接收</span><br><span class="line">   1.  消息过滤</span><br><span class="line">5. 消息发送与接收顺序控制</span><br><span class="line">6. 事务消息</span><br><span class="line"></span><br><span class="line">## 单生产者单消费者消息发送（OneToOne）</span><br><span class="line"></span><br><span class="line">### 生产者</span><br><span class="line"></span><br><span class="line">```java</span><br><span class="line">public class Producer &#123;</span><br><span class="line">   public static void main(String[] args) throws Exception &#123;</span><br><span class="line">       // 1.谁来发？</span><br><span class="line">       DefaultMQProducer producer = new DefaultMQProducer(&quot;group&quot;);</span><br><span class="line">       // 2.发给谁</span><br><span class="line">       producer.setNamesrvAddr(&quot;localhost:9876&quot;);</span><br><span class="line">       producer.start();</span><br><span class="line">       // 3.怎么发</span><br><span class="line">       // 4.发什么</span><br><span class="line">       String msg = &quot;hello word!&quot;;</span><br><span class="line">       Message message = new Message(&quot;topic1&quot;, &quot;tag1&quot;, msg.getBytes());</span><br><span class="line">       SendResult sendResult = producer.send(message);</span><br><span class="line">       // 5.发的结果是什么</span><br><span class="line">       System.out.println(sendResult);</span><br><span class="line">       // 6.打扫战场</span><br><span class="line">       producer.shutdown();</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</code></pre>
+</li>
+</ul>
+</blockquote>
+<h3 id="消费者"><a href="#消费者" class="headerlink" title="消费者"></a>消费者</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Consumer</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * 1. 谁来发？</span></span><br><span class="line"><span class="comment">         * 2. 发给谁？</span></span><br><span class="line"><span class="comment">         * 3. 怎么发？</span></span><br><span class="line"><span class="comment">         * 4. 发什么？</span></span><br><span class="line"><span class="comment">         * 5. 发的结果是什么？</span></span><br><span class="line"><span class="comment">         * 6. 打扫战场</span></span><br><span class="line"><span class="comment">         **/</span></span><br><span class="line">        <span class="comment">//1.创建一个接收消息的对象Consumer</span></span><br><span class="line">        <span class="type">DefaultMQPushConsumer</span> <span class="variable">consumer</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DefaultMQPushConsumer</span>(<span class="string">&quot;group1&quot;</span>);</span><br><span class="line">        <span class="comment">//2.设定接收的命名服务器地址</span></span><br><span class="line">        consumer.setNamesrvAddr(<span class="string">&quot;localhost:9876&quot;</span>);</span><br><span class="line">        <span class="comment">//3.设置接收消息对应的topic,对应的sub标签为任意</span></span><br><span class="line">        consumer.subscribe(<span class="string">&quot;topic1&quot;</span>, <span class="string">&quot;*&quot;</span>);</span><br><span class="line">        <span class="comment">//4.开启监听，用于接收消息</span></span><br><span class="line">        consumer.registerMessageListener(<span class="keyword">new</span> <span class="title class_">MessageListenerConcurrently</span>() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">public</span> ConsumeConcurrentlyStatus <span class="title function_">consumeMessage</span><span class="params">(List&lt;MessageExt&gt; msgs, ConsumeConcurrentlyContext consumeConcurrentlyContext)</span> &#123;</span><br><span class="line">                <span class="comment">// 写业务逻辑</span></span><br><span class="line">                <span class="keyword">for</span> (MessageExt msg : msgs) &#123;</span><br><span class="line">                    System.out.println(msg);</span><br><span class="line">                    <span class="type">byte</span>[] body = msg.getBody();</span><br><span class="line">                    System.out.println(<span class="keyword">new</span> <span class="title class_">String</span>(body));</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">return</span> ConsumeConcurrentlyStatus.CONSUME_SUCCESS;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">        <span class="comment">//5.启动接收消息的服务</span></span><br><span class="line">        consumer.start();</span><br><span class="line">        System.out.println(<span class="string">&quot;接受消息服务已经开启！&quot;</span>);</span><br><span class="line">        <span class="comment">//6 不要关闭消费者！</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="单生产者多消费者消息发送（OneToMany）"><a href="#单生产者多消费者消息发送（OneToMany）" class="headerlink" title="单生产者多消费者消息发送（OneToMany）"></a>单生产者多消费者消息发送（OneToMany）</h2><h3 id="生产者"><a href="#生产者" class="headerlink" title="生产者"></a>生产者</h3><ul>
+<li>for循环发送十条消息</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Producer</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="comment">// 1.谁来发？</span></span><br><span class="line">        <span class="type">DefaultMQProducer</span> <span class="variable">producer</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DefaultMQProducer</span>(<span class="string">&quot;group&quot;</span>);</span><br><span class="line">        <span class="comment">// 2.发给谁</span></span><br><span class="line">        producer.setNamesrvAddr(<span class="string">&quot;localhost:9876&quot;</span>);</span><br><span class="line">        producer.start();</span><br><span class="line">        <span class="comment">// 3.怎么发</span></span><br><span class="line">        <span class="comment">// 4.发什么</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</span><br><span class="line">            <span class="type">String</span> <span class="variable">msg</span> <span class="operator">=</span> <span class="string">&quot;hello word!&quot;</span> + i;</span><br><span class="line">            <span class="type">Message</span> <span class="variable">message</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Message</span>(<span class="string">&quot;topic2&quot;</span>, <span class="string">&quot;tag1&quot;</span>, msg.getBytes());</span><br><span class="line">            <span class="type">SendResult</span> <span class="variable">sendResult</span> <span class="operator">=</span> producer.send(message);</span><br><span class="line">            <span class="comment">// 5.发的结果是什么</span></span><br><span class="line">            System.out.println(sendResult);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 6.打扫战场</span></span><br><span class="line">        producer.shutdown();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="消费者-负载均衡（-默认）"><a href="#消费者-负载均衡（-默认）" class="headerlink" title="消费者-负载均衡（ 默认）"></a>消费者-负载均衡（ 默认）</h3><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20250930173309893.png" alt=" " style="zoom:50%;" />
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Consumer</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="comment">//1.创建一个接收消息的对象Consumer</span></span><br><span class="line">        <span class="type">DefaultMQPushConsumer</span> <span class="variable">consumer</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DefaultMQPushConsumer</span>(<span class="string">&quot;group1&quot;</span>);</span><br><span class="line">        <span class="comment">//2.设定接收的命名服务器地址</span></span><br><span class="line">        consumer.setNamesrvAddr(<span class="string">&quot;localhost:9876&quot;</span>);</span><br><span class="line">        <span class="comment">//3.设置接收消息对应的topic,对应的sub标签为任意</span></span><br><span class="line">        consumer.subscribe(<span class="string">&quot;topic2&quot;</span>, <span class="string">&quot;*&quot;</span>);</span><br><span class="line">        <span class="comment">//4.开启监听，用于接收消息</span></span><br><span class="line">        consumer.registerMessageListener(<span class="keyword">new</span> <span class="title class_">MessageListenerConcurrently</span>() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">public</span> ConsumeConcurrentlyStatus <span class="title function_">consumeMessage</span><span class="params">(List&lt;MessageExt&gt; msgs, ConsumeConcurrentlyContext consumeConcurrentlyContext)</span> &#123;</span><br><span class="line">                <span class="comment">// 写业务逻辑</span></span><br><span class="line">                <span class="keyword">for</span> (MessageExt msg : msgs) &#123;</span><br><span class="line">                    System.out.println(msg);</span><br><span class="line">                    <span class="type">byte</span>[] body = msg.getBody();</span><br><span class="line">                    System.out.println(<span class="keyword">new</span> <span class="title class_">String</span>(body));</span><br><span class="line">                    System.out.println(<span class="string">&quot;================================&quot;</span>);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">return</span> ConsumeConcurrentlyStatus.CONSUME_SUCCESS;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">        <span class="comment">//5.启动接收消息的服务</span></span><br><span class="line">        consumer.start();</span><br><span class="line">        System.out.println(<span class="string">&quot;接受消息服务已经开启！&quot;</span>);</span><br><span class="line">        <span class="comment">//6 不要关闭消费者！</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="编辑启动类"><a href="#编辑启动类" class="headerlink" title="编辑启动类"></a>编辑启动类</h4><p><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20250930171120696.png" alt="image-20250930171120696"></p>
+<h4 id="允许多个实例"><a href="#允许多个实例" class="headerlink" title="允许多个实例"></a>允许多个实例</h4><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20250930171319403.png" alt=" " style="zoom:50%;" />
+
+<h4 id="运行两个消费者类（不同实例）"><a href="#运行两个消费者类（不同实例）" class="headerlink" title="运行两个消费者类（不同实例）"></a>运行两个消费者类（不同实例）</h4><blockquote>
+<ul>
+<li>发现mq默认使用负载均衡<ul>
+<li>生产者发送10个消息</li>
+<li>第一个消费者随机消费104598</li>
+<li>第二个随机消费2367</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<p><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20250930171418561.png" alt="image-20250930171418561"></p>
+<p><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20250930171431879.png" alt="image-20250930171431879"></p>
+<h3 id="消费者-广播模式"><a href="#消费者-广播模式" class="headerlink" title="消费者-广播模式"></a>消费者-广播模式</h3><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20250930173436258.png" alt=" " style="zoom:50%;" />
+
+<blockquote>
+<ol>
+<li>生产者发送 <code>group1 topic3 tag1</code></li>
+<li>消费者<ol>
+<li>1号 <code>group1 topic3 </code></li>
+<li>2号 <code>group2 topic3 </code></li>
+</ol>
+</li>
+<li>此时发现消费者都消费了10条消息</li>
+<li>使用 <code>consumer.setMessageModel(MessageModel.BROADCASTING);</code> 修改配置</li>
+</ol>
+</blockquote>
+<p><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20250930172543062.png" alt="image-20250930172543062"></p>
+<h2 id="消息类别"><a href="#消息类别" class="headerlink" title="消息类别"></a>消息类别</h2><h3 id="同步消息"><a href="#同步消息" class="headerlink" title="同步消息"></a>同步消息</h3> <img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20250930175452322.png" alt=" " style="zoom:50%;" />
+
+<h3 id="异步消息"><a href="#异步消息" class="headerlink" title="异步消息"></a>异步消息</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Producer</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="comment">// 1.谁来发？</span></span><br><span class="line">        <span class="type">DefaultMQProducer</span> <span class="variable">producer</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DefaultMQProducer</span>(<span class="string">&quot;group1&quot;</span>);</span><br><span class="line">        <span class="comment">// 2.发给谁</span></span><br><span class="line">        producer.setNamesrvAddr(<span class="string">&quot;localhost:9876&quot;</span>);</span><br><span class="line">        producer.start();</span><br><span class="line">        <span class="comment">// 3.怎么发</span></span><br><span class="line">        <span class="comment">// 4.发什么</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</span><br><span class="line">            <span class="type">String</span> <span class="variable">msg</span> <span class="operator">=</span> <span class="string">&quot;hello word!&quot;</span> + i;</span><br><span class="line">            <span class="type">Message</span> <span class="variable">message</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Message</span>(<span class="string">&quot;topic5&quot;</span>, <span class="string">&quot;tag1&quot;</span>, msg.getBytes());</span><br><span class="line">            producer.send(message, <span class="keyword">new</span> <span class="title class_">SendCallback</span>() &#123;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onSuccess</span><span class="params">(SendResult sendResult)</span> &#123;</span><br><span class="line">                    System.out.println(sendResult);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onException</span><span class="params">(Throwable e)</span> &#123;</span><br><span class="line">                    <span class="comment">// 业务逻辑</span></span><br><span class="line">                    System.out.println(e);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 6.不要关闭！</span></span><br><span class="line"><span class="comment">//        producer.shutdown();</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<ul>
+<li>如订单消息 可以过一小时才获取消息结果</li>
+</ul>
+</blockquote>
+<img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20250930175541638.png" alt=" " style="zoom:50%;" />
+
+<h3 id="单向消息"><a href="#单向消息" class="headerlink" title="单向消息"></a>单向消息</h3><ul>
+<li><code>producer.sendOneway(message);</code></li>
+</ul>
+<img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20250930181331115.png" alt=" " style="zoom:50%;" />
+
+<h3 id="延时消息"><a href="#延时消息" class="headerlink" title="延时消息"></a>延时消息</h3><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20250930182401887.png" alt=" " style="zoom:50%;" />
+
+<img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20250930182415566.png" alt=" " style="zoom:44%;" />
+
+<h3 id="批量消息"><a href="#批量消息" class="headerlink" title="批量消息"></a>批量消息</h3><blockquote>
+<p>批量消息<br>注意点：</p>
+<ol>
+<li><p>这些批量消息应该有相同的topic<br>2相同的waitStoreMsgOK<br>3不能是延时消息<br>4消息内容总长度不超过4M<br>消息内容总长度包含如下：</p>
+</li>
+<li><p>topic（字符串字节数）</p>
+</li>
+<li><p>body（字节数组长度）</p>
+</li>
+<li><p>消息追加的属性（key与value对应字符串字节数）</p>
+</li>
+<li><p>日志（固定20字节）</p>
+</li>
+</ol>
+</blockquote>
+<img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20250930182708566.png" alt=" " style="zoom:50%;" />
+
+<h2 id="消息过滤"><a href="#消息过滤" class="headerlink" title="消息过滤"></a>消息过滤</h2><h3 id="tag过滤"><a href="#tag过滤" class="headerlink" title="tag过滤"></a>tag过滤</h3><blockquote>
+<ul>
+<li><code>consumer.subscribe(&quot;topic8&quot;, &quot;tag1&quot;);</code> 过滤tag1的消息</li>
+<li><code>consumer.subscribe(&quot;topic8&quot;, &quot;tag1 || vip&quot;);</code>  过滤tag1或者vip的</li>
+</ul>
+</blockquote>
+<h3 id="sql过滤-属性过滤"><a href="#sql过滤-属性过滤" class="headerlink" title="sql过滤 (属性过滤)"></a>sql过滤 (属性过滤)</h3><ol>
+<li><strong>生产者设置属性</strong></li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">message.putUserProperty(<span class="string">&quot;name&quot;</span>, <span class="string">&quot;zhangsan&quot;</span>);</span><br><span class="line">message.putUserProperty(<span class="string">&quot;age&quot;</span>, <span class="string">&quot;22&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li><strong>消费者设置表达式过滤</strong></li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">consumer.subscribe(<span class="string">&quot;topic8&quot;</span>, MessageSelector.bySql(<span class="string">&quot;age &gt; 18&quot;</span>));</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>在 <code>broker.conf</code> 文件下设置  开启sql过滤</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">enablePropertyFilter=true</span><br></pre></td></tr></table></figure>
+
+<h1 id="SpringBoot整合"><a href="#SpringBoot整合" class="headerlink" title="SpringBoot整合"></a>SpringBoot整合</h1><h2 id="1-导包"><a href="#1-导包" class="headerlink" title="1. 导包"></a>1. 导包</h2><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.rocketmq<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>rocketmq-spring-boot-starter<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.0.3<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="2-配置文件"><a href="#2-配置文件" class="headerlink" title="2 配置文件"></a>2 配置文件</h2><figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">server:</span></span><br><span class="line">  <span class="attr">port:</span> <span class="number">8081</span></span><br><span class="line"></span><br><span class="line"><span class="attr">rocketmq:</span></span><br><span class="line">  <span class="attr">name-server:</span> <span class="string">localhost:9876</span></span><br><span class="line">  <span class="attr">producer:</span></span><br><span class="line">    <span class="attr">group:</span> <span class="string">group1</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#rocketmq.name-server=localhost:9876</span></span><br><span class="line"><span class="comment">#rocketmq.producer.group=demo_producer</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="实体类"><a href="#实体类" class="headerlink" title="实体类"></a>实体类</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">User</span> <span class="keyword">implements</span> <span class="title class_">Serializable</span> &#123;</span><br><span class="line">    String userName;</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> age;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">toString</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;User&#123;&quot;</span> +</span><br><span class="line">                <span class="string">&quot;userName=&#x27;&quot;</span> + userName + <span class="string">&#x27;\&#x27;&#x27;</span> +</span><br><span class="line">                <span class="string">&quot;, age=&quot;</span> + age +</span><br><span class="line">                <span class="string">&#x27;&#125;&#x27;</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setUserName</span><span class="params">(String userName)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.userName = userName;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setAge</span><span class="params">(<span class="type">int</span> age)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.age = age;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getUserName</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> userName;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getAge</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> age;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">User</span><span class="params">(String userName, <span class="type">int</span> age)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.userName = userName;</span><br><span class="line">        <span class="built_in">this</span>.age = age;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">User</span><span class="params">()</span> &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-生产者"><a href="#3-生产者" class="headerlink" title="3 生产者"></a>3 生产者</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping(&quot;/demo&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SendController</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 模本类 建立连接</span></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    RocketMQTemplate rocketMqTemplate;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/send&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">send</span><span class="params">()</span> &#123;</span><br><span class="line"></span><br><span class="line">        <span class="type">String</span> <span class="variable">msg</span> <span class="operator">=</span> <span class="string">&quot;hello world&quot;</span>;</span><br><span class="line"></span><br><span class="line">        <span class="type">User</span> <span class="variable">cyt</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">User</span>(<span class="string">&quot;cyt&quot;</span>, <span class="number">23</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">//        rocketMqTemplate.convertAndSend(&quot;topic10&quot;, cyt);</span></span><br><span class="line">        rocketMqTemplate.convertAndSend(<span class="string">&quot;topic10&quot;</span>, msg);</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;success&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="4-消费者"><a href="#4-消费者" class="headerlink" title="4 消费者"></a>4 消费者</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="meta">@RocketMQMessageListener(topic = &quot;topic10&quot;, consumerGroup = &quot;group1&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Consumer</span> <span class="keyword">implements</span> <span class="title class_">RocketMQListener</span>&lt;String&gt; &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onMessage</span><span class="params">(String s)</span> &#123;</span><br><span class="line">        System.out.println(s);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="5-其他消息"><a href="#5-其他消息" class="headerlink" title="5 其他消息"></a>5 其他消息</h2><h3 id="同步消息-1"><a href="#同步消息-1" class="headerlink" title="同步消息"></a>同步消息</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 同步消息</span></span><br><span class="line">rocketMqTemplate.syncSend(<span class="string">&quot;topic10&quot;</span>, <span class="string">&quot;同步消息&quot;</span> + cyt);</span><br></pre></td></tr></table></figure>
+
+<h3 id="异步消息-1"><a href="#异步消息-1" class="headerlink" title="异步消息"></a>异步消息</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 异步消息</span></span><br><span class="line">rocketMqTemplate.asyncSend(<span class="string">&quot;topic10&quot;</span>, <span class="string">&quot;异步消息&quot;</span> + cyt, <span class="keyword">new</span> <span class="title class_">SendCallback</span>() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onSuccess</span><span class="params">(SendResult sendResult)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;SendCallback&quot;</span> + sendResult);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onException</span><span class="params">(Throwable throwable)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;onException&quot;</span> + throwable);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 超时</span></span><br><span class="line">&#125;, <span class="number">5000</span>);</span><br></pre></td></tr></table></figure>
+
+<h3 id="单向消息-1"><a href="#单向消息-1" class="headerlink" title="单向消息"></a>单向消息</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 单向消息</span></span><br><span class="line">rocketMqTemplate.sendOneWay(<span class="string">&quot;topic10&quot;</span>, <span class="string">&quot;单向消息&quot;</span> + cyt);</span><br></pre></td></tr></table></figure>
+
+<h3 id="延迟消息"><a href="#延迟消息" class="headerlink" title="延迟消息"></a>延迟消息</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 延迟消息 2000超时时间 3：等级3 10s后延迟</span></span><br><span class="line">rocketMqTemplate.syncSend(<span class="string">&quot;topic10&quot;</span>, MessageBuilder.withPayload(<span class="string">&quot;延迟消息&quot;</span> + msg).build(), <span class="number">2000</span>, <span class="number">3</span>);</span><br></pre></td></tr></table></figure>
+
+<h3 id="批量消息-1"><a href="#批量消息-1" class="headerlink" title="批量消息"></a>批量消息</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 批量消息</span></span><br><span class="line">List&lt;Message&gt; msgList = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">msgList.add(<span class="keyword">new</span> <span class="title class_">Message</span>(<span class="string">&quot;topic6&quot;</span>, <span class="string">&quot;tag1&quot;</span>, <span class="string">&quot;msg1&quot;</span>.getBytes()));</span><br><span class="line">msgList.add(<span class="keyword">new</span> <span class="title class_">Message</span>(<span class="string">&quot;topic6&quot;</span>, <span class="string">&quot;tag1&quot;</span>, <span class="string">&quot;msg2&quot;</span>.getBytes()));</span><br><span class="line">msgList.add(<span class="keyword">new</span> <span class="title class_">Message</span>(<span class="string">&quot;topic6&quot;</span>, <span class="string">&quot;tag1&quot;</span>, <span class="string">&quot;msg3&quot;</span>.getBytes()));</span><br><span class="line">rocketMQTemplate.syncSend(<span class="string">&quot;topic8&quot;</span>, msgList, <span class="number">1000</span>);</span><br></pre></td></tr></table></figure>
+
+<h2 id="过滤"><a href="#过滤" class="headerlink" title="过滤"></a>过滤</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="comment">// tag过滤</span></span><br><span class="line"><span class="comment">//@RocketMQMessageListener(topic = &quot;topic10&quot;, consumerGroup = &quot;group1&quot;, selectorExpression = &quot;tag1 || tag2&quot;)</span></span><br><span class="line"><span class="comment">// sql 过滤 + 广播模式</span></span><br><span class="line"><span class="meta">@RocketMQMessageListener(topic = &quot;topic10&quot;,</span></span><br><span class="line"><span class="meta">        consumerGroup = &quot;group1&quot;,</span></span><br><span class="line"><span class="meta">        selectorType = SelectorType.SQL92, selectorExpression = &quot;age &gt; 18&quot;,</span></span><br><span class="line"><span class="meta">        messageModel = MessageModel.BROADCASTING)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Consumer</span> <span class="keyword">implements</span> <span class="title class_">RocketMQListener</span>&lt;String&gt; &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onMessage</span><span class="params">(String s)</span> &#123;</span><br><span class="line">        System.out.println(s);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="消息特殊处理"><a href="#消息特殊处理" class="headerlink" title="消息特殊处理"></a>消息特殊处理</h1><h2 id="消息顺序"><a href="#消息顺序" class="headerlink" title="消息顺序"></a>消息顺序</h2><h3 id="错乱的顺序原因"><a href="#错乱的顺序原因" class="headerlink" title="错乱的顺序原因"></a>错乱的顺序原因</h3><blockquote>
+<ul>
+<li><p>原因: </p>
+<ul>
+<li><p>消息有序指的是可以按照消息的发送顺序来消费(FIFO)。RocketMQ可以严格的保证消息有序，可以分为 分区有序或者全局有序。 </p>
+</li>
+<li><p>顺序消费的原理解析，在默认的情况下消息发送会采取Round Robin轮询方式把消息发送到不同的 queue(分区队列)；而消费消息的时候从多个queue上拉取消息，这种情况发送和消费是不能保证顺序。 但是如果控制发送的顺序消息只依次发送到同一个queue中，消费的时候只从这个queue上依次拉取， 则就保证了顺序。当发送和消费参与的queue只有一个，则是全局有序；如果多个queue参与，则为分 区有序，即相对每个queue，消息都是有序的。 </p>
+</li>
+<li><p>下面用订单进行分区有序的示例。一个订单的顺序流程是：创建、付款、推送、完成。订单号相同的消 息会被先后发送到同一个队列中，消费时，同一个OrderId获取到的肯定是同一个队列。</p>
+</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251008152701960.png" alt=" " style="zoom:50%;" />
+
+<h3 id="想要的效果"><a href="#想要的效果" class="headerlink" title="想要的效果"></a>想要的效果</h3><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251008152832270.png" alt=" " style="zoom:50%;" />
+
+<h3 id="算法实现"><a href="#算法实现" class="headerlink" title="算法实现"></a>算法实现</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">List&lt;OrderStep&gt; orderList = <span class="keyword">new</span> <span class="title class_">Producer</span>().buildOrders();</span><br><span class="line"><span class="comment">//设置消息进入到指定的消息队列中</span></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">final</span> OrderStep order : orderList) &#123;</span><br><span class="line">    <span class="type">Message</span> <span class="variable">msg</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Message</span>(<span class="string">&quot;topic1&quot;</span>, order.toString().getBytes());</span><br><span class="line">    <span class="comment">//发送时要指定对应的消息队列选择器</span></span><br><span class="line">    <span class="type">SendResult</span> <span class="variable">result</span> <span class="operator">=</span> producer.send(msg, <span class="keyword">new</span> <span class="title class_">MessageQueueSelector</span>() &#123;</span><br><span class="line">        <span class="comment">//设置当前消息发送时使用哪一个消息队列</span></span><br><span class="line">        <span class="keyword">public</span> MessageQueue <span class="title function_">select</span><span class="params">(List&lt;MessageQueue&gt; list, Message</span></span><br><span class="line"><span class="params">                message, Object o)</span> &#123;</span><br><span class="line">            <span class="comment">//根据发送的信息不同，选择不同的消息队列</span></span><br><span class="line">            <span class="comment">//根据id来选择一个消息队列的对象，并返回-&gt;id得到int值</span></span><br><span class="line">            <span class="type">long</span> <span class="variable">orderId</span> <span class="operator">=</span> order.getOrderId();</span><br><span class="line">            <span class="type">long</span> <span class="variable">mqIndex</span> <span class="operator">=</span> orderId % list.size();</span><br><span class="line">            <span class="keyword">return</span> list.get((<span class="type">int</span>) mqIndex);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;, <span class="literal">null</span>);</span><br><span class="line">    System.out.println(result);</span><br><span class="line">&#125;</span><br><span class="line">producer.shutdown();</span><br></pre></td></tr></table></figure>
+
+<h2 id="消息事务"><a href="#消息事务" class="headerlink" title="消息事务"></a>消息事务</h2><h3 id="事务消息概念"><a href="#事务消息概念" class="headerlink" title="事务消息概念"></a>事务消息概念</h3><blockquote>
+<ul>
+<li>红色为正常事务过程</li>
+<li>蓝色为事务补偿过程</li>
+<li>理解案例： 生产者是我  broker兄弟  本地事务 <code>老婆管钱</code></li>
+</ul>
+<ol>
+<li>我同意借钱</li>
+<li>兄弟回复ok</li>
+<li>问老婆意愿是否借钱</li>
+<li>提交或回归  借或者不借</li>
+</ol>
+<ul>
+<li>补偿</li>
+</ul>
+<ol start="5">
+<li>本地事务出问题</li>
+<li>检测本地事务</li>
+<li>提交或者回滚</li>
+</ol>
+</blockquote>
+<img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251008162649671.png" alt=" " style="zoom:50%;" />
+
+<h3 id="事务消息状态"><a href="#事务消息状态" class="headerlink" title="事务消息状态"></a>事务消息状态</h3><blockquote>
+<ol>
+<li>提交状态：允许进入队列，此消息与非事务消息无区别 </li>
+<li>回滚状态：不允许进入队列，此消息等同于未发送过</li>
+<li>中间状态：完成了half消息的发送，未对MQ进行二次状态确认</li>
+</ol>
+<ul>
+<li>注意：事务消息仅与生产者有关，与消费者无关</li>
+</ul>
+</blockquote>
+<h3 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h3><h4 id="事务提交"><a href="#事务提交" class="headerlink" title="事务提交"></a>事务提交</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Producer</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="comment">// 1.谁来发？ 事务消息生产者</span></span><br><span class="line">        <span class="type">TransactionMQProducer</span> <span class="variable">producer</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TransactionMQProducer</span>(<span class="string">&quot;group1&quot;</span>);</span><br><span class="line">        <span class="comment">// 2.发给谁</span></span><br><span class="line">        producer.setNamesrvAddr(<span class="string">&quot;localhost:9876&quot;</span>);</span><br><span class="line">        <span class="comment">// 设置事务监听</span></span><br><span class="line">        producer.setTransactionListener(<span class="keyword">new</span> <span class="title class_">TransactionListener</span>() &#123;</span><br><span class="line">            <span class="comment">// 正常事务过程</span></span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">public</span> LocalTransactionState <span class="title function_">executeLocalTransaction</span><span class="params">(Message message, Object o)</span> &#123;</span><br><span class="line">                <span class="comment">// 把消息报错到数据库中</span></span><br><span class="line">                <span class="comment">// sql insert</span></span><br><span class="line">                System.out.println(<span class="string">&quot;执行了正常的事务过程&quot;</span>);</span><br><span class="line">                <span class="keyword">return</span> LocalTransactionState.COMMIT_MESSAGE; <span class="comment">// 提交</span></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 事务补偿过程</span></span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">public</span> LocalTransactionState <span class="title function_">checkLocalTransaction</span><span class="params">(MessageExt messageExt)</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">        <span class="comment">// 4.发什么</span></span><br><span class="line">        producer.start();</span><br><span class="line">        <span class="type">String</span> <span class="variable">msg</span> <span class="operator">=</span> <span class="string">&quot;hello word!&quot;</span>;</span><br><span class="line">        <span class="type">Message</span> <span class="variable">message</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Message</span>(<span class="string">&quot;topic13&quot;</span>, <span class="string">&quot;tag1&quot;</span>, msg.getBytes());</span><br><span class="line">        <span class="comment">// 发送事务消息</span></span><br><span class="line">        <span class="type">TransactionSendResult</span> <span class="variable">transactionSendResult</span> <span class="operator">=</span> producer.sendMessageInTransaction(message, <span class="literal">null</span>);</span><br><span class="line">        System.out.println(transactionSendResult);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="事务回滚"><a href="#事务回滚" class="headerlink" title="事务回滚"></a>事务回滚</h4><ul>
+<li><code>return LocalTransactionState.ROLLBACK_MESSAGE;</code></li>
+</ul>
+<h4 id="事务补偿"><a href="#事务补偿" class="headerlink" title="事务补偿"></a>事务补偿</h4><ul>
+<li>如果事务补偿仍返回 <code>UNKNOW</code> 则人工排查</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">producer.setTransactionListener(<span class="keyword">new</span> <span class="title class_">TransactionListener</span>() &#123;</span><br><span class="line">    <span class="comment">// 正常事务过程</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> LocalTransactionState <span class="title function_">executeLocalTransaction</span><span class="params">(Message message, Object o)</span> &#123;</span><br><span class="line">        <span class="comment">// 把消息报错到数据库中</span></span><br><span class="line">        <span class="comment">// sql insert</span></span><br><span class="line">        System.out.println(<span class="string">&quot;执行了正常的事务过程&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> LocalTransactionState.UNKNOW;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 事务补偿过程</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> LocalTransactionState <span class="title function_">checkLocalTransaction</span><span class="params">(MessageExt messageExt)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;执行事务补偿过程&quot;</span>);</span><br><span class="line">        <span class="comment">// sql 业务</span></span><br><span class="line">        <span class="keyword">return</span> LocalTransactionState.COMMIT_MESSAGE;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h1 id="集群搭建"><a href="#集群搭建" class="headerlink" title="集群搭建"></a>集群搭建</h1><h2 id="集群分类"><a href="#集群分类" class="headerlink" title="集群分类"></a>集群分类</h2><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251009151206667.png" alt=" " style="zoom:50%;" />
+
+<h2 id="集群特征"><a href="#集群特征" class="headerlink" title="集群特征"></a>集群特征</h2><blockquote>
+<ul>
+<li>主从broker<ul>
+<li>规定 <code>id=0</code> 的为主节点</li>
+<li><code>brokerName=bs</code> 的为一个集群</li>
+<li>每个broker需要再每个 <code>nameserver</code> 注册topic等信息</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251009152319186.png" alt=" " style="zoom:50%;" />
+
+<h2 id="工作流程"><a href="#工作流程" class="headerlink" title="工作流程"></a>工作流程</h2><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251009152746056.png" alt=" " style="zoom:50%;" />
+
+<h2 id="两主两从集群"><a href="#两主两从集群" class="headerlink" title="两主两从集群"></a>两主两从集群</h2><blockquote>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014624123/article/details/125016137?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522db1ec47fe5ba29ec17803406410d7b2f%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&request_id=db1ec47fe5ba29ec17803406410d7b2f&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~top_positive~default-1-125016137-null-null.142%5Ev102%5Epc_search_result_base8&utm_term=docker%E6%90%AD%E5%BB%BArocketmq%E9%9B%86%E7%BE%A4&spm=1018.2226.3001.4187">https://blog.csdn.net/u014624123/article/details/125016137?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522db1ec47fe5ba29ec17803406410d7b2f%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&amp;request_id=db1ec47fe5ba29ec17803406410d7b2f&amp;biz_id=0&amp;utm_medium=distribute.pc_search_result.none-task-blog-2~all~top_positive~default-1-125016137-null-null.142^v102^pc_search_result_base8&amp;utm_term=docker%E6%90%AD%E5%BB%BArocketmq%E9%9B%86%E7%BE%A4&amp;spm=1018.2226.3001.4187</a></li>
+<li><code>Ip3 副本 ip5</code> 两个在不同的物理机器上</li>
+<li><code>Ip4 副本 ip6</code> 两个在不同的物理机器上</li>
+</ul>
+</blockquote>
+<img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251009160234891.png" alt=" " style="zoom:50%;" />
+
+<h1 id="5-高级特性（重点）"><a href="#5-高级特性（重点）" class="headerlink" title="5 高级特性（重点）"></a>5 高级特性（重点）</h1><h2 id="5-1-消息的存储"><a href="#5-1-消息的存储" class="headerlink" title="5.1 消息的存储"></a>5.1 消息的存储</h2><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251009165755628.png" alt=" " style="zoom:50%;" />
+
+<h2 id="5-2-消息的存储介质"><a href="#5-2-消息的存储介质" class="headerlink" title="5.2 消息的存储介质"></a>5.2 消息的存储介质</h2><blockquote>
+<ul>
+<li>直接向数据库的文件放数据 （文件系统）<ul>
+<li>速度快</li>
+<li>防止DB挂掉</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251009170109113.png" alt=" " style="zoom:50%;" />
+
+<h2 id="5-3-高效的消息存储与读写方式"><a href="#5-3-高效的消息存储与读写方式" class="headerlink" title="5.3 高效的消息存储与读写方式"></a>5.3 高效的消息存储与读写方式</h2><h3 id="随机写（100k-s）"><a href="#随机写（100k-s）" class="headerlink" title="随机写（100k&#x2F;s）"></a>随机写（100k&#x2F;s）</h3><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251009170647015.png" alt=" " style="zoom:50%;" />
+
+<h3 id="顺序写-（600MB-s）"><a href="#顺序写-（600MB-s）" class="headerlink" title="顺序写 （600MB&#x2F;s）"></a>顺序写 （600MB&#x2F;s）</h3><ul>
+<li><code>1秒1部电影</code></li>
+</ul>
+<img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251009170750523.png" alt=" " style="zoom:50%;" />
+
+<h3 id="mq方式"><a href="#mq方式" class="headerlink" title="mq方式"></a>mq方式</h3><blockquote>
+<ul>
+<li>预先申请空间（如1GB）</li>
+<li><code>顺序读写</code></li>
+<li>配置文件可以修改</li>
+</ul>
+</blockquote>
+<p><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251009171229997.png" alt="image-20251009171229997"></p>
+<h3 id="零拷贝技术"><a href="#零拷贝技术" class="headerlink" title="零拷贝技术"></a>零拷贝技术</h3><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251009172014886.png" alt=" " style="zoom:50%;" />
+
+<h2 id="5-4-消息存储结构"><a href="#5-4-消息存储结构" class="headerlink" title="5.4 消息存储结构"></a>5.4 消息存储结构</h2><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251009172958133.png" alt=" " style="zoom:50%;" />
+
+<blockquote>
+<ul>
+<li><code>commitlog</code> 目录下存放消息的信息  各个队列queue<ul>
+<li><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251009173044520.png" alt=" " style="zoom:33%;" /></li>
+</ul>
+</li>
+<li><code>consumequeue</code> 消费逻辑队列<ul>
+<li><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251009172817973.png" alt=" " style="zoom:33%;" /></li>
+<li>消费者重启后  可以定位上次读写的位置</li>
+<li>包含偏移量信息</li>
+</ul>
+</li>
+<li><code>index</code> 索引<ul>
+<li>存放队列索引</li>
+<li>时间</li>
+<li>读到第几个队列</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251009173225891.png" alt=" " style="zoom:50%;" />
+
+<h2 id="5-5-刷盘机制"><a href="#5-5-刷盘机制" class="headerlink" title="5.5 刷盘机制"></a>5.5 刷盘机制</h2><ul>
+<li>broker把数据存放到 <code>commitlog</code> 文件夹下面， 此时采用 <code>刷盘机制</code></li>
+</ul>
+<h3 id="同步刷盘"><a href="#同步刷盘" class="headerlink" title="同步刷盘"></a>同步刷盘</h3><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251009173657990.png" alt=" " style="zoom:50%;" />
+
+<h3 id="异步刷盘"><a href="#异步刷盘" class="headerlink" title="异步刷盘"></a>异步刷盘</h3><blockquote>
+<ul>
+<li>只包含1，3, 7三步</li>
+<li>生产者给broker</li>
+<li>broker立即返回ACK  保存成功<ul>
+<li>此时数据在内存</li>
+</ul>
+</li>
+<li>当数据达到一定量写入磁盘持久化</li>
+</ul>
+</blockquote>
+<h3 id="对比-配置"><a href="#对比-配置" class="headerlink" title="对比&amp;配置"></a>对比&amp;配置</h3><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251009174027864.png" alt=" " style="zoom:43%;" />
+
+<h2 id="5-6-高可用性"><a href="#5-6-高可用性" class="headerlink" title="5.6 高可用性"></a>5.6 高可用性</h2><blockquote>
+<ul>
+<li><code>nameserver</code> 部署多台  数据不共享</li>
+<li><code>broker</code>  主从架构</li>
+<li><code>producer</code> topic到不同的多个group组</li>
+<li><code>consumer</code> 读写分离</li>
+</ul>
+</blockquote>
+<img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251009180358585.png" alt=" " style="zoom:50%;" /> 
+
+<h2 id="5-7-负载均衡"><a href="#5-7-负载均衡" class="headerlink" title="5.7 负载均衡"></a>5.7 负载均衡</h2><h3 id="producer"><a href="#producer" class="headerlink" title="producer"></a>producer</h3><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251009181122441.png" alt=" " style="zoom:50%;" />
+
+<h3 id="consumer"><a href="#consumer" class="headerlink" title="consumer"></a>consumer</h3><blockquote>
+<p>循环平均分配：</p>
+<p>当broker-b挂了，此时三个消费者仍是平均地从 <code>broker-a</code>中取数据</p>
+</blockquote>
+<img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251009181017525.png" alt=" " style="zoom:50%;" />
+
+<h2 id="5-8-消息重试"><a href="#5-8-消息重试" class="headerlink" title="5.8 消息重试"></a>5.8 消息重试</h2><h3 id="顺序消息重试"><a href="#顺序消息重试" class="headerlink" title="顺序消息重试"></a>顺序消息重试</h3><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251009181414370.png" alt=" " style="zoom:50%;" />
+
+<h3 id="无序消息重试"><a href="#无序消息重试" class="headerlink" title="无序消息重试"></a>无序消息重试</h3><blockquote>
+<ul>
+<li>每隔一定时间自动重发<ul>
+<li>间隔时间递增</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251009181748466.png" alt=" " style="zoom:50%;" /> 
+
+<h2 id="5-9-死信队列"><a href="#5-9-死信队列" class="headerlink" title="5.9 死信队列"></a>5.9 死信队列</h2><blockquote>
+<ol>
+<li>当消息消费重试到达了指定次数（默认16次）后，MQ将无法被正常消费的消息称为死信消息 （Dead-Letter Message）</li>
+<li>死信消息不会被直接抛弃，而是保存到了一个全新的队列中，该队列称为死信队列（Dead-Letter Queue）</li>
+<li>死信队列特征<ol>
+<li>归属某一个组（Gourp Id），而不归属Topic，也不归属消费者 </li>
+<li>一个死信队列中可以包含同一个组下的多个Topic中的死信消息 </li>
+<li>死信队列不会进行默认初始化，当第一个死信出现后，此队列首次初始化</li>
+</ol>
+</li>
+<li>死信队列中消息特征<ol>
+<li>不会被再次重复消费  </li>
+<li>死信队列中的消息有效期为3天，达到时限后将被清除</li>
+</ol>
+</li>
+</ol>
+</blockquote>
+<img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251009182032101.png" alt=" " style="zoom:43%;" />
+
+<img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251009182131118.png" alt=" " style="zoom:50%;" />
+
+<h2 id="5-10-消息重复消费与消息幂等"><a href="#5-10-消息重复消费与消息幂等" class="headerlink" title="5.10 消息重复消费与消息幂等"></a>5.10 消息重复消费与消息幂等</h2><h3 id="原因重复原因"><a href="#原因重复原因" class="headerlink" title="原因重复原因"></a>原因重复原因</h3><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251009182514631.png" alt=" " style="zoom:50%;" />
+
+<h3 id="消息幂等"><a href="#消息幂等" class="headerlink" title="消息幂等"></a>消息幂等</h3><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251009183002433.png" alt=" " style="zoom:50%;" /></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://youcyt.ltd">cyt</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://youcyt.ltd/post/java%E5%AD%A6%E4%B9%A0/%E4%B8%AD%E9%97%B4%E4%BB%B6/rocketMQ%E7%AC%94%E8%AE%B0.html">https://youcyt.ltd/post/java学习/中间件/rocketMQ笔记.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://youcyt.ltd" target="_blank">cyt的笔记屋</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/java/">java</a><a class="post-meta__tags" href="/tags/rocketMQ/">rocketMQ</a><a class="post-meta__tags" href="/tags/%E4%B8%AD%E9%97%B4%E4%BB%B6/">中间件</a></div><div class="post-share"><div class="social-share" data-image="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20250929171632722.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i>赞助</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wechat.jpg" target="_blank"><img class="post-qr-code-img" src="/img/wechat.jpg" alt="微信"/></a><div class="post-qr-code-desc">微信</div></li><li class="reward-item"><a href="/img/alipay.jpg" target="_blank"><img class="post-qr-code-img" src="/img/alipay.jpg" alt="支付宝"/></a><div class="post-qr-code-desc">支付宝</div></li></ul></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/post/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0-%E7%82%AE%E5%93%A5%E5%B8%A6%E4%BD%A0%E5%AD%A6%E5%85%A5%E9%97%A8.html" title="机器学习-炮哥带你学入门"><img class="cover" src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20250922172523151.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">机器学习-炮哥带你学入门</div></div><div class="info-2"><div class="info-item-1">  教程地址：  up：炮哥带你学  课程名字：[手把手教学]快速带你入门深度学习与实战 简介：入门机器学习和深度学习 网址： https://www.bilibili.com/video/BV1eP411w7Re/?spm_id_from=333.1387.homepage.video_card.click&amp;vd_source=f8d1f5518d3f58b48b5c428323f8d3bf  up：炮哥带你学  课程名字：Pytorch框架与经典卷积神经网络与实战     简介：入门深度学习和pytorch 网址： https://www.bilibili.com/video/BV1e34y1M7wR/?spm_id_from=333.1387.homepage.video_card.click&amp;vd_source=f8d1f5518d3f58b48b5c428323f8d3bf  简介 深度学习以神经网络为基础    神经网络 并非隐藏层越多越好 可能过拟合    全连接神经网络 通过训练w和b（权重和偏置）  注：机器学习内容     神经网络作用  &#...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/post/java%E5%9F%BA%E7%A1%80/java8.html" title="java8"><img class="cover" src="/img/cover/8.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2023-08-18</div><div class="info-item-2">java8</div></div><div class="info-2"><div class="info-item-1"> 函数式编程–stream 流  概述为什么学  函数式编程思想 Lambda 表达式概述 使用情况 参数为一个接口，并且只有一个抽象方法 （不包含抽象方法|） 例如：   例例 1 例 2 例 4 例 5 ✨ 省略规则    Stream 流https://www.bilibili.com/video/BV1Gh41187uR?p=12&amp;spm_id_from=pageDriver&amp;vd_source=30924cc6debe913490fb34d7e3b62fdd 概述 初始化工程12345678910111213141516171819202122232425262728293031323334353637public class StreamDemo &#123;    public static void main(String[] args) &#123;        List&lt;Author&gt; authors = getAuthors();        System.out.println(authors);    &#125;    ...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/other/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">cyt</div><div class="author-info-description">归途也还可爱</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">15</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">19</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/yigeyouzia" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="https://blog.csdn.net/c_cjwkwjsnsj" target="_blank" title="CSDN"><i class="fa fa-book-open"></i></a><a class="social-icon" href="tencent://AddContact/?fromId=45&amp;fromSubId=1&amp;subcmd=all&amp;uin=1793402316&amp;website=www.oicqzone.com" target="_blank" title="QQ"><i class="fab fa-qq"></i></a><a class="social-icon" href="mailto:1793402316@qq.com" target="_blank" title="Email"><i class="fas fa-envelope-open-text"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E7%9F%A5%E8%AF%86"><span class="toc-number">1.</span> <span class="toc-text">基本知识</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#MQ%E4%BB%8B%E7%BB%8D"><span class="toc-number">1.1.</span> <span class="toc-text">MQ介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E6%AF%94"><span class="toc-number">1.1.1.</span> <span class="toc-text">对比</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%8B%E7%BB%8D"><span class="toc-number">1.1.2.</span> <span class="toc-text">介绍</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BC%98%E5%8A%BF%E5%92%8C%E5%8A%A3%E5%8A%BF"><span class="toc-number">1.2.</span> <span class="toc-text">优势和劣势</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BC%98%E5%8A%BF"><span class="toc-number">1.3.</span> <span class="toc-text">优势</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BA%94%E7%94%A8%E8%A7%A3%E8%80%A6"><span class="toc-number">1.3.1.</span> <span class="toc-text">应用解耦</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%82%E6%AD%A5%E6%8F%90%E9%80%9F"><span class="toc-number">1.3.2.</span> <span class="toc-text">异步提速</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%89%8A%E5%B3%B0%E5%A1%AB%E8%B0%B7"><span class="toc-number">1.3.3.</span> <span class="toc-text">削峰填谷</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%A4%BA%E6%84%8F%E5%9B%BE"><span class="toc-number">1.3.3.1.</span> <span class="toc-text">示意图</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A3%E5%8A%BF"><span class="toc-number">1.4.</span> <span class="toc-text">劣势</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86%EF%BC%88%E9%87%8D%E7%82%B9%EF%BC%89"><span class="toc-number">1.5.</span> <span class="toc-text">工作原理（重点）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%89%E8%A3%85"><span class="toc-number">1.6.</span> <span class="toc-text">安装</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B6%88%E8%B4%B9%E8%80%85"><span class="toc-number">1.6.1.</span> <span class="toc-text">消费者</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%95%E7%94%9F%E4%BA%A7%E8%80%85%E5%A4%9A%E6%B6%88%E8%B4%B9%E8%80%85%E6%B6%88%E6%81%AF%E5%8F%91%E9%80%81%EF%BC%88OneToMany%EF%BC%89"><span class="toc-number">1.7.</span> <span class="toc-text">单生产者多消费者消息发送（OneToMany）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%9F%E4%BA%A7%E8%80%85"><span class="toc-number">1.7.1.</span> <span class="toc-text">生产者</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B6%88%E8%B4%B9%E8%80%85-%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%EF%BC%88-%E9%BB%98%E8%AE%A4%EF%BC%89"><span class="toc-number">1.7.2.</span> <span class="toc-text">消费者-负载均衡（ 默认）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BC%96%E8%BE%91%E5%90%AF%E5%8A%A8%E7%B1%BB"><span class="toc-number">1.7.2.1.</span> <span class="toc-text">编辑启动类</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%85%81%E8%AE%B8%E5%A4%9A%E4%B8%AA%E5%AE%9E%E4%BE%8B"><span class="toc-number">1.7.2.2.</span> <span class="toc-text">允许多个实例</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%90%E8%A1%8C%E4%B8%A4%E4%B8%AA%E6%B6%88%E8%B4%B9%E8%80%85%E7%B1%BB%EF%BC%88%E4%B8%8D%E5%90%8C%E5%AE%9E%E4%BE%8B%EF%BC%89"><span class="toc-number">1.7.2.3.</span> <span class="toc-text">运行两个消费者类（不同实例）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B6%88%E8%B4%B9%E8%80%85-%E5%B9%BF%E6%92%AD%E6%A8%A1%E5%BC%8F"><span class="toc-number">1.7.3.</span> <span class="toc-text">消费者-广播模式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E7%B1%BB%E5%88%AB"><span class="toc-number">1.8.</span> <span class="toc-text">消息类别</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8C%E6%AD%A5%E6%B6%88%E6%81%AF"><span class="toc-number">1.8.1.</span> <span class="toc-text">同步消息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%82%E6%AD%A5%E6%B6%88%E6%81%AF"><span class="toc-number">1.8.2.</span> <span class="toc-text">异步消息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%95%E5%90%91%E6%B6%88%E6%81%AF"><span class="toc-number">1.8.3.</span> <span class="toc-text">单向消息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BB%B6%E6%97%B6%E6%B6%88%E6%81%AF"><span class="toc-number">1.8.4.</span> <span class="toc-text">延时消息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%B9%E9%87%8F%E6%B6%88%E6%81%AF"><span class="toc-number">1.8.5.</span> <span class="toc-text">批量消息</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E8%BF%87%E6%BB%A4"><span class="toc-number">1.9.</span> <span class="toc-text">消息过滤</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#tag%E8%BF%87%E6%BB%A4"><span class="toc-number">1.9.1.</span> <span class="toc-text">tag过滤</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sql%E8%BF%87%E6%BB%A4-%E5%B1%9E%E6%80%A7%E8%BF%87%E6%BB%A4"><span class="toc-number">1.9.2.</span> <span class="toc-text">sql过滤 (属性过滤)</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#SpringBoot%E6%95%B4%E5%90%88"><span class="toc-number">2.</span> <span class="toc-text">SpringBoot整合</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%AF%BC%E5%8C%85"><span class="toc-number">2.1.</span> <span class="toc-text">1. 导包</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="toc-number">2.2.</span> <span class="toc-text">2 配置文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E4%BD%93%E7%B1%BB"><span class="toc-number">2.3.</span> <span class="toc-text">实体类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E7%94%9F%E4%BA%A7%E8%80%85"><span class="toc-number">2.4.</span> <span class="toc-text">3 生产者</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E6%B6%88%E8%B4%B9%E8%80%85"><span class="toc-number">2.5.</span> <span class="toc-text">4 消费者</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E5%85%B6%E4%BB%96%E6%B6%88%E6%81%AF"><span class="toc-number">2.6.</span> <span class="toc-text">5 其他消息</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8C%E6%AD%A5%E6%B6%88%E6%81%AF-1"><span class="toc-number">2.6.1.</span> <span class="toc-text">同步消息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%82%E6%AD%A5%E6%B6%88%E6%81%AF-1"><span class="toc-number">2.6.2.</span> <span class="toc-text">异步消息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%95%E5%90%91%E6%B6%88%E6%81%AF-1"><span class="toc-number">2.6.3.</span> <span class="toc-text">单向消息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BB%B6%E8%BF%9F%E6%B6%88%E6%81%AF"><span class="toc-number">2.6.4.</span> <span class="toc-text">延迟消息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%B9%E9%87%8F%E6%B6%88%E6%81%AF-1"><span class="toc-number">2.6.5.</span> <span class="toc-text">批量消息</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%87%E6%BB%A4"><span class="toc-number">2.7.</span> <span class="toc-text">过滤</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E7%89%B9%E6%AE%8A%E5%A4%84%E7%90%86"><span class="toc-number">3.</span> <span class="toc-text">消息特殊处理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E9%A1%BA%E5%BA%8F"><span class="toc-number">3.1.</span> <span class="toc-text">消息顺序</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%94%99%E4%B9%B1%E7%9A%84%E9%A1%BA%E5%BA%8F%E5%8E%9F%E5%9B%A0"><span class="toc-number">3.1.1.</span> <span class="toc-text">错乱的顺序原因</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%83%B3%E8%A6%81%E7%9A%84%E6%95%88%E6%9E%9C"><span class="toc-number">3.1.2.</span> <span class="toc-text">想要的效果</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%97%E6%B3%95%E5%AE%9E%E7%8E%B0"><span class="toc-number">3.1.3.</span> <span class="toc-text">算法实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E4%BA%8B%E5%8A%A1"><span class="toc-number">3.2.</span> <span class="toc-text">消息事务</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8B%E5%8A%A1%E6%B6%88%E6%81%AF%E6%A6%82%E5%BF%B5"><span class="toc-number">3.2.1.</span> <span class="toc-text">事务消息概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8B%E5%8A%A1%E6%B6%88%E6%81%AF%E7%8A%B6%E6%80%81"><span class="toc-number">3.2.2.</span> <span class="toc-text">事务消息状态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0"><span class="toc-number">3.2.3.</span> <span class="toc-text">代码实现</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BA%8B%E5%8A%A1%E6%8F%90%E4%BA%A4"><span class="toc-number">3.2.3.1.</span> <span class="toc-text">事务提交</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BA%8B%E5%8A%A1%E5%9B%9E%E6%BB%9A"><span class="toc-number">3.2.3.2.</span> <span class="toc-text">事务回滚</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BA%8B%E5%8A%A1%E8%A1%A5%E5%81%BF"><span class="toc-number">3.2.3.3.</span> <span class="toc-text">事务补偿</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA"><span class="toc-number">4.</span> <span class="toc-text">集群搭建</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9B%86%E7%BE%A4%E5%88%86%E7%B1%BB"><span class="toc-number">4.1.</span> <span class="toc-text">集群分类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9B%86%E7%BE%A4%E7%89%B9%E5%BE%81"><span class="toc-number">4.2.</span> <span class="toc-text">集群特征</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="toc-number">4.3.</span> <span class="toc-text">工作流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%A4%E4%B8%BB%E4%B8%A4%E4%BB%8E%E9%9B%86%E7%BE%A4"><span class="toc-number">4.4.</span> <span class="toc-text">两主两从集群</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#5-%E9%AB%98%E7%BA%A7%E7%89%B9%E6%80%A7%EF%BC%88%E9%87%8D%E7%82%B9%EF%BC%89"><span class="toc-number">5.</span> <span class="toc-text">5 高级特性（重点）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#5-1-%E6%B6%88%E6%81%AF%E7%9A%84%E5%AD%98%E5%82%A8"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 消息的存储</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-2-%E6%B6%88%E6%81%AF%E7%9A%84%E5%AD%98%E5%82%A8%E4%BB%8B%E8%B4%A8"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 消息的存储介质</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-3-%E9%AB%98%E6%95%88%E7%9A%84%E6%B6%88%E6%81%AF%E5%AD%98%E5%82%A8%E4%B8%8E%E8%AF%BB%E5%86%99%E6%96%B9%E5%BC%8F"><span class="toc-number">5.3.</span> <span class="toc-text">5.3 高效的消息存储与读写方式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9A%8F%E6%9C%BA%E5%86%99%EF%BC%88100k-s%EF%BC%89"><span class="toc-number">5.3.1.</span> <span class="toc-text">随机写（100k&#x2F;s）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A1%BA%E5%BA%8F%E5%86%99-%EF%BC%88600MB-s%EF%BC%89"><span class="toc-number">5.3.2.</span> <span class="toc-text">顺序写 （600MB&#x2F;s）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mq%E6%96%B9%E5%BC%8F"><span class="toc-number">5.3.3.</span> <span class="toc-text">mq方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9B%B6%E6%8B%B7%E8%B4%9D%E6%8A%80%E6%9C%AF"><span class="toc-number">5.3.4.</span> <span class="toc-text">零拷贝技术</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-4-%E6%B6%88%E6%81%AF%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84"><span class="toc-number">5.4.</span> <span class="toc-text">5.4 消息存储结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-5-%E5%88%B7%E7%9B%98%E6%9C%BA%E5%88%B6"><span class="toc-number">5.5.</span> <span class="toc-text">5.5 刷盘机制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8C%E6%AD%A5%E5%88%B7%E7%9B%98"><span class="toc-number">5.5.1.</span> <span class="toc-text">同步刷盘</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%82%E6%AD%A5%E5%88%B7%E7%9B%98"><span class="toc-number">5.5.2.</span> <span class="toc-text">异步刷盘</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E6%AF%94-%E9%85%8D%E7%BD%AE"><span class="toc-number">5.5.3.</span> <span class="toc-text">对比&amp;配置</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-6-%E9%AB%98%E5%8F%AF%E7%94%A8%E6%80%A7"><span class="toc-number">5.6.</span> <span class="toc-text">5.6 高可用性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-7-%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1"><span class="toc-number">5.7.</span> <span class="toc-text">5.7 负载均衡</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#producer"><span class="toc-number">5.7.1.</span> <span class="toc-text">producer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#consumer"><span class="toc-number">5.7.2.</span> <span class="toc-text">consumer</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-8-%E6%B6%88%E6%81%AF%E9%87%8D%E8%AF%95"><span class="toc-number">5.8.</span> <span class="toc-text">5.8 消息重试</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A1%BA%E5%BA%8F%E6%B6%88%E6%81%AF%E9%87%8D%E8%AF%95"><span class="toc-number">5.8.1.</span> <span class="toc-text">顺序消息重试</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A0%E5%BA%8F%E6%B6%88%E6%81%AF%E9%87%8D%E8%AF%95"><span class="toc-number">5.8.2.</span> <span class="toc-text">无序消息重试</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-9-%E6%AD%BB%E4%BF%A1%E9%98%9F%E5%88%97"><span class="toc-number">5.9.</span> <span class="toc-text">5.9 死信队列</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-10-%E6%B6%88%E6%81%AF%E9%87%8D%E5%A4%8D%E6%B6%88%E8%B4%B9%E4%B8%8E%E6%B6%88%E6%81%AF%E5%B9%82%E7%AD%89"><span class="toc-number">5.10.</span> <span class="toc-text">5.10 消息重复消费与消息幂等</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8E%9F%E5%9B%A0%E9%87%8D%E5%A4%8D%E5%8E%9F%E5%9B%A0"><span class="toc-number">5.10.1.</span> <span class="toc-text">原因重复原因</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E5%B9%82%E7%AD%89"><span class="toc-number">5.10.2.</span> <span class="toc-text">消息幂等</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/post/java%E5%AD%A6%E4%B9%A0/%E4%B8%AD%E9%97%B4%E4%BB%B6/rocketMQ%E7%AC%94%E8%AE%B0.html" title="rocketMQ笔记"><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20250929171632722.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="rocketMQ笔记"/></a><div class="content"><a class="title" href="/post/java%E5%AD%A6%E4%B9%A0/%E4%B8%AD%E9%97%B4%E4%BB%B6/rocketMQ%E7%AC%94%E8%AE%B0.html" title="rocketMQ笔记">rocketMQ笔记</a><time datetime="2025-10-09T10:32:06.000Z" title="发表于 2025-10-09 18:32:06">2025-10-09</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0-%E7%82%AE%E5%93%A5%E5%B8%A6%E4%BD%A0%E5%AD%A6%E5%85%A5%E9%97%A8.html" title="机器学习-炮哥带你学入门"><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20250922172523151.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="机器学习-炮哥带你学入门"/></a><div class="content"><a class="title" href="/post/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0-%E7%82%AE%E5%93%A5%E5%B8%A6%E4%BD%A0%E5%AD%A6%E5%85%A5%E9%97%A8.html" title="机器学习-炮哥带你学入门">机器学习-炮哥带你学入门</a><time datetime="2025-09-25T05:13:52.000Z" title="发表于 2025-09-25 13:13:52">2025-09-25</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/%E7%82%AE%E5%93%A5%E5%B8%A6%E4%BD%A0%E5%AD%A6.html" title="机器学习-深度学习入门"><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20250922172523151.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="机器学习-深度学习入门"/></a><div class="content"><a class="title" href="/post/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/%E7%82%AE%E5%93%A5%E5%B8%A6%E4%BD%A0%E5%AD%A6.html" title="机器学习-深度学习入门">机器学习-深度学习入门</a><time datetime="2025-09-02T02:56:23.000Z" title="发表于 2025-09-02 10:56:23">2025-09-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-day01.html" title="设计模式Day1"><img src="/img/cover/8.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="设计模式Day1"/></a><div class="content"><a class="title" href="/post/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-day01.html" title="设计模式Day1">设计模式Day1</a><time datetime="2024-12-17T13:29:18.000Z" title="发表于 2024-12-17 21:29:18">2024-12-17</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/springcloud/7springcloudAlibaba.html" title="springcloud-Alibaba"><img src="/img/cover/g.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="springcloud-Alibaba"/></a><div class="content"><a class="title" href="/post/springcloud/7springcloudAlibaba.html" title="springcloud-Alibaba">springcloud-Alibaba</a><time datetime="2023-09-09T01:38:11.000Z" title="发表于 2023-09-09 09:38:11">2023-09-09</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2023 - 2025 By cyt</span></div><div class="footer_custom_text"><img src="https://haiyong.site/img/icp.png"><a href="https://beian.miit.gov.cn/#/Integrated/index"  style="color:white" target="_blank">蜀ICP备2023010926号</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><div class="js-pjax"><script>(() => {
+  const abcjsInit = () => {
+    const abcjsFn = () => {
+      setTimeout(() => {
+        const sheets = document.querySelectorAll(".abc-music-sheet")
+        for (let i = 0; i < sheets.length; i++) {
+          const ele = sheets[i]
+          if (ele.children.length > 0) continue
+
+          // Parse parameters from data-params attribute
+          let params = {}
+          const dp = ele.getAttribute("data-params")
+          if (dp) {
+            try {
+              params = JSON.parse(dp)
+            } catch (e) {
+              console.error("Failed to parse data-params:", e)
+            }
+          }
+
+          // Merge parsed parameters with the responsive option
+          // Ensures params content appears before responsive
+          const options = { ...params, responsive: "resize" }
+
+          // Render the music score using ABCJS.renderAbc
+          ABCJS.renderAbc(ele, ele.innerHTML, options)
+        }
+      }, 100)
+    }
+
+    if (typeof ABCJS === "object") {
+      abcjsFn()
+    } else {
+      btf.getScript("https://cdn.jsdelivr.net/npm/abcjs/dist/abcjs-basic-min.min.js").then(abcjsFn)
+    }
+  }
+
+  if (window.pjax) {
+    abcjsInit()
+  } else {
+    window.addEventListener("load", abcjsInit)
+  }
+
+  btf.addGlobalFn("encrypt", abcjsInit, "abcjs")
+})()</script></div><canvas class="fireworks" mobile="true"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-nest.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
