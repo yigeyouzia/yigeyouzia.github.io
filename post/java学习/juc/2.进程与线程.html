@@ -1,0 +1,441 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>JUC-2.进程与线程 | cyt的笔记屋</title><meta name="author" content="cyt"><meta name="copyright" content="cyt"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="JUC-2.进程与线程">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JUC-2.进程与线程">
+<meta property="og:url" content="https://youcyt.ltd/post/java%E5%AD%A6%E4%B9%A0/juc/2.%E8%BF%9B%E7%A8%8B%E4%B8%8E%E7%BA%BF%E7%A8%8B.html">
+<meta property="og:site_name" content="cyt的笔记屋">
+<meta property="og:description" content="JUC-2.进程与线程">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251105130710922.png">
+<meta property="article:published_time" content="2025-11-04T16:00:00.000Z">
+<meta property="article:modified_time" content="2025-11-11T02:55:29.688Z">
+<meta property="article:author" content="cyt">
+<meta property="article:tag" content="java">
+<meta property="article:tag" content="JUC">
+<meta property="article:tag" content="中间件">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251105130710922.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "JUC-2.进程与线程",
+  "url": "https://youcyt.ltd/post/java%E5%AD%A6%E4%B9%A0/juc/2.%E8%BF%9B%E7%A8%8B%E4%B8%8E%E7%BA%BF%E7%A8%8B.html",
+  "image": "https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251105130710922.png",
+  "datePublished": "2025-11-04T16:00:00.000Z",
+  "dateModified": "2025-11-11T02:55:29.688Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "cyt",
+      "url": "https://youcyt.ltd"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://youcyt.ltd/post/java%E5%AD%A6%E4%B9%A0/juc/2.%E8%BF%9B%E7%A8%8B%E4%B8%8E%E7%BA%BF%E7%A8%8B.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          const hour = new Date().getHours()
+          const isNight = hour <= 6 || hour >= 18
+          if (theme === undefined) isNight ? activateDarkMode() : activateLightMode()
+          else theme === 'light' ? activateLightMode() : activateDarkMode()
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'JUC-2.进程与线程',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/background.css"><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg" style="background-image: url(/img/bg/gongga.jpg);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/other/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">24</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">24</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg/gongga.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">cyt的笔记屋</span></a><a class="nav-page-title" href="/"><span class="site-name">JUC-2.进程与线程</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">JUC-2.进程与线程</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-11-04T16:00:00.000Z" title="发表于 2025-11-05 00:00:00">2025-11-05</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-11-11T02:55:29.688Z" title="更新于 2025-11-11 10:55:29">2025-11-11</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/java/">java</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">2.8k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>11分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="1-概览"><a href="#1-概览" class="headerlink" title="1. 概览"></a>1. 概览</h1><h2 id="大纲"><a href="#大纲" class="headerlink" title="大纲"></a>大纲</h2><p><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251105125528044.png"><br><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251105125540028.png"></p>
+<h2 id="预备知识"><a href="#预备知识" class="headerlink" title="预备知识"></a>预备知识</h2><ul>
+<li>希望你不是一个初学者 </li>
+<li>线程安全问题，需要你接触过 Java Web 开发、Jdbc 开发、Web 服务器、分布式框架时才会遇到 </li>
+<li>基于 JDK 8，最好对函数式编程、lambda 有一定了解 </li>
+<li>采用了 slf4j 打印日志，这是好的实践 </li>
+<li>采用了 lombok 简化 java bean 编写 </li>
+<li>给每个线程好名字，这也是一项好的实践</li>
+</ul>
+<h1 id="2-进程与线程"><a href="#2-进程与线程" class="headerlink" title="2.进程与线程"></a>2.进程与线程</h1><h2 id="本章内容"><a href="#本章内容" class="headerlink" title="本章内容"></a>本章内容</h2><ul>
+<li>进程和线程的概念 </li>
+<li>并行和并发的概念 </li>
+<li>线程基本应用</li>
+</ul>
+<h2 id="2-1-进程与线程"><a href="#2-1-进程与线程" class="headerlink" title="2.1 进程与线程"></a>2.1 进程与线程</h2><h3 id="进程"><a href="#进程" class="headerlink" title="进程"></a>进程</h3><ul>
+<li>程序由指令和数据组成，但这些指令要运行，数据要读写，就必须将指令加载至 CPU，数据加载至内存。在 指令运行过程中还需要用到磁盘、网络等设备。进程就是用来加载指令、管理内存、管理 IO 的 。</li>
+<li>当一个程序被运行，从磁盘加载这个程序的代码至内存，这时就开启了一个进程。 </li>
+<li>进程就可以视为程序的一个实例。大部分程序可以同时运行多个实例进程（例如记事本、画图、浏览器 等），也有的程序只能启动一个实例进程（例如网易云音乐、360 安全卫士等）</li>
+</ul>
+<h3 id="线程"><a href="#线程" class="headerlink" title="线程"></a>线程</h3><ul>
+<li><code>一个进程之内可以分为一到多个线程。</code> </li>
+<li>一个线程就是一个指令流，将指令流中的一条条指令以一定的顺序交给 CPU 执行 </li>
+<li>Java 中，<code>线程作为最小调度单位</code>，<code>进程作为资源分配的最小单位</code>。 在 windows 中进程是不活动的，只是作 为线程的容器</li>
+</ul>
+<h3 id="二者对比"><a href="#二者对比" class="headerlink" title="二者对比"></a>二者对比</h3><ul>
+<li>进程基本上相互独立的，而线程存在于进程内，是进程的一个子集 </li>
+<li>进程拥有共享的资源，如内存空间等，供其内部的线程共享 </li>
+<li>进程间通信较为复杂 <ul>
+<li>同一台计算机的进程通信称为 <code>IPC</code>（Inter-process communication） </li>
+<li>不同计算机之间的进程通信，需要通过网络，并遵守共同的协议，例如 <code>HTTP</code></li>
+</ul>
+</li>
+<li>线程通信相对简单，因为它们共享进程内的内存，一个例子是多个线程可以访问同一个共享变量 </li>
+<li>线程更轻量，线程上下文切换成本一般上要比进程上下文切换低</li>
+</ul>
+<h2 id="2-2-并行与并发"><a href="#2-2-并行与并发" class="headerlink" title="2.2 并行与并发"></a>2.2 并行与并发</h2><p>单核cpu下，线程实际还是<strong>串行执行</strong>的。操作系统中有一个组件叫做任务调度器，将 cpu 的时间片（windows 下时间片最小约为 15 毫秒）分给不同的程序使用，只是由于 cpu 在线程间（时间片很短）的切换非常快，人类感觉是同时运行的 。总结为一句话就是： <strong>微观串行，宏观并行</strong> 。 </p>
+<p>一般会将这种线程轮流使用 CPU 的做法称为并发， concurrent</p>
+<table>
+<thead>
+<tr>
+<th align="center">CPU</th>
+<th align="center">时间片 1</th>
+<th align="center">时间片 2</th>
+<th align="center">时间片 3</th>
+<th align="center">时间片 4</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">core</td>
+<td align="center">线程 1</td>
+<td align="center">线程 2</td>
+<td align="center">线程 3</td>
+<td align="center">线程 4</td>
+</tr>
+<tr>
+<td align="center">![</td>
+<td align="center">375](<a target="_blank" rel="noopener" href="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251105130448543.png">https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251105130448543.png</a>)</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">多核 cpu下，每个 <code>核（core）</code> 都可以调度运行线程，这时候线程可以是并行的。</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th align="center">CPU</th>
+<th align="center">时间片 1</th>
+<th align="center">时间片 2</th>
+<th align="center">时间片 3</th>
+<th align="center">时间片 4</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">core1</td>
+<td align="center">线程 1</td>
+<td align="center">线程 2</td>
+<td align="center">线程 3</td>
+<td align="center">线程 4</td>
+</tr>
+<tr>
+<td align="center">core2</td>
+<td align="center">线程 4</td>
+<td align="center">线程 4</td>
+<td align="center">线程 2</td>
+<td align="center">线程 2</td>
+</tr>
+<tr>
+<td align="center">![</td>
+<td align="center">413](<a target="_blank" rel="noopener" href="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251105130710922.png">https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251105130710922.png</a>)</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">引用 Rob Pike 的一段描述：</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+</tbody></table>
+<ul>
+<li>并发（concurrent）是同一时间应对（dealing with）多件事情的能力 。</li>
+<li>并行（parallel）是同一时间动手做（doing）多件事情的能力。</li>
+</ul>
+<h2 id="2-3-应用"><a href="#2-3-应用" class="headerlink" title="2.3 应用"></a>2.3 应用</h2><h3 id="应用之异步调用（案例1）"><a href="#应用之异步调用（案例1）" class="headerlink" title="应用之异步调用（案例1）"></a>应用之异步调用（案例1）</h3><p>以调用方角度来讲，如果 </p>
+<ul>
+<li>需要等待结果返回，才能继续运行就是同步 </li>
+<li>不需要等待结果返回，就能继续运行就是异步</li>
+</ul>
+<h4 id="需要等待结果"><a href="#需要等待结果" class="headerlink" title="需要等待结果"></a>需要等待结果</h4><p>这时既可以使用同步处理，也可以使用异步来处理<br>join 实现（同步）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="type">int</span> <span class="variable">result</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">test1</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">    log.debug(<span class="string">&quot;开始&quot;</span>);</span><br><span class="line">    <span class="type">Thread</span> <span class="variable">t1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">        log.debug(<span class="string">&quot;开始&quot;</span>);</span><br><span class="line">        sleep(<span class="number">1</span>);</span><br><span class="line">        log.debug(<span class="string">&quot;结束&quot;</span>);</span><br><span class="line">        result = <span class="number">10</span>;</span><br><span class="line">    &#125;, <span class="string">&quot;t1&quot;</span>);</span><br><span class="line">    t1.start();</span><br><span class="line">    t1.join();</span><br><span class="line">    log.debug(<span class="string">&quot;结果为:&#123;&#125;&quot;</span>, result);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">20:30:40.453 [main] c.TestJoin - 开始</span><br><span class="line">20:30:40.541 [Thread-0] c.TestJoin - 开始</span><br><span class="line">20:30:41.543 [Thread-0] c.TestJoin - 结束</span><br><span class="line">20:30:41.551 [main] c.TestJoin - 结果为:10</span><br></pre></td></tr></table></figure>
+<p>评价 </p>
+<ul>
+<li>需要外部共享变量，不符合面向对象封装的思想 </li>
+<li>必须等待线程结束，不能配合线程池使用</li>
+</ul>
+<h5 id="Future-实现（同步）"><a href="#Future-实现（同步）" class="headerlink" title="Future 实现（同步）"></a>Future 实现（同步）</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">test2</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException, ExecutionException &#123;</span><br><span class="line">    log.debug(<span class="string">&quot;开始&quot;</span>);</span><br><span class="line">    FutureTask&lt;Integer&gt; result = <span class="keyword">new</span> <span class="title class_">FutureTask</span>&lt;&gt;(() -&gt; &#123;</span><br><span class="line">        log.debug(<span class="string">&quot;开始&quot;</span>);</span><br><span class="line">        sleep(<span class="number">1</span>);</span><br><span class="line">        log.debug(<span class="string">&quot;结束&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">10</span>;</span><br><span class="line">    &#125;);</span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">Thread</span>(result, <span class="string">&quot;t1&quot;</span>).start();</span><br><span class="line">    log.debug(<span class="string">&quot;结果为:&#123;&#125;&quot;</span>, result.get());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">10:11:57.880 c.TestSync [main] - 开始</span><br><span class="line">10:11:57.942 c.TestSync [t1] - 开始</span><br><span class="line">10:11:58.943 c.TestSync [t1] - 结束</span><br><span class="line">10:11:58.943 c.TestSync [main] - 结果为:10</span><br></pre></td></tr></table></figure>
+
+<p>评价 </p>
+<ul>
+<li>规避了使用 join 之前的缺点 </li>
+<li>可以方便配合线程池使用</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">test3</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException, ExecutionException &#123;</span><br><span class="line">    <span class="type">ExecutorService</span> <span class="variable">service</span> <span class="operator">=</span> Executors.newFixedThreadPool(<span class="number">1</span>);</span><br><span class="line">    log.debug(<span class="string">&quot;开始&quot;</span>);</span><br><span class="line">    Future&lt;Integer&gt; result = service.submit(() -&gt; &#123;</span><br><span class="line">        log.debug(<span class="string">&quot;开始&quot;</span>);</span><br><span class="line">        sleep(<span class="number">1</span>);</span><br><span class="line">        log.debug(<span class="string">&quot;结束&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">10</span>;</span><br><span class="line">    &#125;);</span><br><span class="line">    log.debug(<span class="string">&quot;结果为:&#123;&#125;, result 的类型:&#123;&#125;&quot;</span>, result.get(), result.getClass());</span><br><span class="line">    service.shutdown();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>输出</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">10:17:40.090 c.TestSync [main] - 开始</span><br><span class="line">10:17:40.150 c.TestSync [pool-1-thread-1] - 开始</span><br><span class="line">10:17:41.151 c.TestSync [pool-1-thread-1] - 结束</span><br><span class="line">10:17:41.151 c.TestSync [main] - 结果为:10, result 的类型:class java.util.concurrent.FutureTask</span><br></pre></td></tr></table></figure>
+
+<p>评价 </p>
+<ul>
+<li>仍然是 main 线程接收结果 </li>
+<li>get 方法是让调用线程同步等待</li>
+</ul>
+<h5 id="自定义实现（同步）"><a href="#自定义实现（同步）" class="headerlink" title="自定义实现（同步）"></a>自定义实现（同步）</h5><p>见模式篇：保护性暂停模式</p>
+<h5 id="CompletableFuture-实现（异步）"><a href="#CompletableFuture-实现（异步）" class="headerlink" title="CompletableFuture 实现（异步）"></a>CompletableFuture 实现（异步）</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">test4</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// 进行计算的线程池</span></span><br><span class="line">    <span class="type">ExecutorService</span> <span class="variable">computeService</span> <span class="operator">=</span> Executors.newFixedThreadPool(<span class="number">1</span>);</span><br><span class="line">    <span class="comment">// 接收结果的线程池</span></span><br><span class="line">    <span class="type">ExecutorService</span> <span class="variable">resultService</span> <span class="operator">=</span> Executors.newFixedThreadPool(<span class="number">1</span>);</span><br><span class="line">    log.debug(<span class="string">&quot;开始&quot;</span>);</span><br><span class="line">    CompletableFuture.supplyAsync(() -&gt; &#123;</span><br><span class="line">        log.debug(<span class="string">&quot;开始&quot;</span>);</span><br><span class="line">        sleep(<span class="number">1</span>);</span><br><span class="line">        log.debug(<span class="string">&quot;结束&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">10</span>;</span><br><span class="line">    &#125;, computeService).thenAcceptAsync((result) -&gt; &#123;</span><br><span class="line">        log.debug(<span class="string">&quot;结果为:&#123;&#125;&quot;</span>, result);</span><br><span class="line">    &#125;, resultService);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>输出</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">10:36:28.114 c.TestSync [main] - 开始</span><br><span class="line">10:36:28.164 c.TestSync [pool-1-thread-1] - 开始</span><br><span class="line">10:36:29.165 c.TestSync [pool-1-thread-1] - 结束</span><br><span class="line">10:36:29.165 c.TestSync [pool-2-thread-1] - 结果为:10</span><br></pre></td></tr></table></figure>
+
+<p>评价 </p>
+<ul>
+<li>可以让调用线程异步处理结果，实际是其他线程去同步等待 </li>
+<li>可以方便地分离不同职责的线程池 </li>
+<li>以任务为中心，而不是以线程为中心</li>
+</ul>
+<h5 id="BlockingQueue-实现（异步）"><a href="#BlockingQueue-实现（异步）" class="headerlink" title="BlockingQueue 实现（异步）"></a>BlockingQueue 实现（异步）</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">test6</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">ExecutorService</span> <span class="variable">consumer</span> <span class="operator">=</span> Executors.newFixedThreadPool(<span class="number">1</span>);</span><br><span class="line">    <span class="type">ExecutorService</span> <span class="variable">producer</span> <span class="operator">=</span> Executors.newFixedThreadPool(<span class="number">1</span>);</span><br><span class="line">    BlockingQueue&lt;Integer&gt; queue = <span class="keyword">new</span> <span class="title class_">SynchronousQueue</span>&lt;&gt;();</span><br><span class="line">    log.debug(<span class="string">&quot;开始&quot;</span>);</span><br><span class="line">    producer.submit(() -&gt; &#123;</span><br><span class="line">        log.debug(<span class="string">&quot;开始&quot;</span>);</span><br><span class="line">        sleep(<span class="number">1</span>);</span><br><span class="line">        log.debug(<span class="string">&quot;结束&quot;</span>);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            queue.put(<span class="number">10</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">    consumer.submit(() -&gt; &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="type">Integer</span> <span class="variable">result</span> <span class="operator">=</span> queue.take();</span><br><span class="line">            log.debug(<span class="string">&quot;结果为:&#123;&#125;&quot;</span>, result);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="不需等待结果"><a href="#不需等待结果" class="headerlink" title="不需等待结果"></a>不需等待结果</h4><p>这时最好是使用异步来处理</p>
+<h5 id="普通线程实现"><a href="#普通线程实现" class="headerlink" title="普通线程实现"></a>普通线程实现</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Slf4j(topic = &quot;c.FileReader&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FileReader</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">read</span><span class="params">(String filename)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">idx</span> <span class="operator">=</span> filename.lastIndexOf(File.separator);</span><br><span class="line">        <span class="type">String</span> <span class="variable">shortName</span> <span class="operator">=</span> filename.substring(idx + <span class="number">1</span>);</span><br><span class="line">        <span class="keyword">try</span> (<span class="type">FileInputStream</span> <span class="variable">in</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(filename)) &#123;</span><br><span class="line">            <span class="type">long</span> <span class="variable">start</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">            log.debug(<span class="string">&quot;read [&#123;&#125;] start ...&quot;</span>, shortName);</span><br><span class="line">            <span class="type">byte</span>[] buf = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1024</span>];</span><br><span class="line">            <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> -<span class="number">1</span>;</span><br><span class="line">            <span class="keyword">do</span> &#123;</span><br><span class="line">                n = in.read(buf);</span><br><span class="line">            &#125; <span class="keyword">while</span> (n != -<span class="number">1</span>);</span><br><span class="line">            <span class="type">long</span> <span class="variable">end</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">            log.debug(<span class="string">&quot;read [&#123;&#125;] end ... cost: &#123;&#125; ms&quot;</span>, shortName, end - start);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>没有用线程时，方法的调用是同步的：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Slf4j(topic = &quot;c.Sync&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Sync</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">fullPath</span> <span class="operator">=</span> <span class="string">&quot;E:\\1.mp4&quot;</span>;</span><br><span class="line">        FileReader.read(fullPath);</span><br><span class="line">        log.debug(<span class="string">&quot;do other things ...&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>输出</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">18:39:15 [main] c.FileReader - <span class="built_in">read</span> [1.mp4] start ...</span><br><span class="line">18:39:19 [main] c.FileReader - <span class="built_in">read</span> [1.mp4] end ... cost: 4090 ms</span><br><span class="line">18:39:19 [main] c.Sync - <span class="keyword">do</span> other things ...</span><br></pre></td></tr></table></figure>
+
+<p>使用了线程后，方法的调用时异步的：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">test1</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; FileReader.read(Constants.MP4_FULL_PATH)).start();</span><br><span class="line">    log.debug(<span class="string">&quot;do other things ...&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>输出</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">18:41:53 [main] c.Async - <span class="keyword">do</span> other things ...</span><br><span class="line">18:41:53 [Thread-0] c.FileReader - <span class="built_in">read</span> [1.mp4] start ...</span><br><span class="line">18:41:57 [Thread-0] c.FileReader - <span class="built_in">read</span> [1.mp4] end ... cost: 4197 ms</span><br></pre></td></tr></table></figure>
+
+<h5 id="线程池实现"><a href="#线程池实现" class="headerlink" title="线程池实现"></a>线程池实现</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">test2</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">ExecutorService</span> <span class="variable">service</span> <span class="operator">=</span> Executors.newFixedThreadPool(<span class="number">1</span>);</span><br><span class="line">    service.execute(() -&gt; FileReader.read(Constants.MP4_FULL_PATH));</span><br><span class="line">    log.debug(<span class="string">&quot;do other things ...&quot;</span>);</span><br><span class="line">    service.shutdown();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>输出</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">11:03:31.245 c.TestAsyc [main] - <span class="keyword">do</span> other things ... </span><br><span class="line">11:03:31.245 c.FileReader [pool-1-thread-1] - <span class="built_in">read</span> [1.mp4] start ... </span><br><span class="line">11:03:33.479 c.FileReader [pool-1-thread-1] - <span class="built_in">read</span> [1.mp4] end ... cost: 2235 ms</span><br></pre></td></tr></table></figure>
+
+<h5 id="CompletableFuture-实现"><a href="#CompletableFuture-实现" class="headerlink" title="CompletableFuture 实现"></a>CompletableFuture 实现</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">test3</span><span class="params">()</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">    CompletableFuture.runAsync(() -&gt; FileReader.read(Constants.MP4_FULL_PATH));</span><br><span class="line">    log.debug(<span class="string">&quot;do other things ...&quot;</span>);</span><br><span class="line">    System.in.read();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>输出</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">11:09:38.145 c.TestAsyc [main] - <span class="keyword">do</span> other things ... </span><br><span class="line">11:09:38.145 c.FileReader [ForkJoinPool.commonPool-worker-1] - <span class="built_in">read</span> [1.mp4] start ... </span><br><span class="line">11:09:40.514 c.FileReader [ForkJoinPool.commonPool-worker-1] - <span class="built_in">read</span> [1.mp4] end ... cost: 2369 ms </span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<p>以调用方角度来讲，</p>
+<ul>
+<li>如果 需要等待结果返回，才能继续运行就是同步 </li>
+<li>不需要等待结果返回，就能继续运行就是异步</li>
+</ul>
+<p><strong>1.设计</strong> </p>
+<p>多线程可以让方法执行变为异步的（即不要巴巴干等着）、比如说读取磁盘文件时，假设读取操作花费了 5 秒钟，如果没有线程调度机制，这 5 秒 cpu 什么都做不了，其它代码都得暂停… </p>
+<p><strong>2.结论</strong> </p>
+<ul>
+<li>比如在项目中，视频文件需要转换格式等操作比较费时，这时开一个新线程处理视频转换，避免阻塞主线程</li>
+<li>tomcat 的异步 servlet 也是类似的目的，让用户线程处理耗时较长的操作，避免阻塞 tomcat 的工作线程</li>
+<li>ui 程序中，开线程进行其他操作，避免阻塞 ui 线程</li>
+</ul>
+<h3 id="应用之提高效率（案例1）"><a href="#应用之提高效率（案例1）" class="headerlink" title="应用之提高效率（案例1）"></a>应用之提高效率（案例1）</h3><p>充分利用<code>多核 cpu</code> 的优势，提高运行效率。想象下面的场景，执行 3 个计算，最后将计算结果汇总。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">计算 1 花费 10 ms</span><br><span class="line">计算 2 花费 11 ms</span><br><span class="line">计算 3 花费 9 ms</span><br><span class="line">汇总需要 1 ms</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>如果是串行执行，那么总共花费的时间是 10 + 11 + 9 + 1 &#x3D; 31ms </p>
+</li>
+<li><p>但如果是四核 cpu，各个核心分别使用线程 1 执行计算 1，线程 2 执行计算 2，线程 3 执行计算 3，那么 3 个 线程是并行的，花费时间只取决于最长的那个线程运行的时间，即 11ms 最后加上汇总时间只会花费 12ms</p>
+</li>
+</ul>
+<blockquote>
+<p><strong>注意：</strong></p>
+<p>需要在多核 cpu 才能提高效率，单核仍然时是轮流执行</p>
+</blockquote>
+<h5 id="1-设计"><a href="#1-设计" class="headerlink" title="1.设计"></a>1.设计</h5><blockquote>
+<p>代码见【应用之效率-案例1】</p>
+</blockquote>
+<h5 id="2-结论"><a href="#2-结论" class="headerlink" title="2.结论"></a>2.结论</h5><ol>
+<li>单核 cpu 下，多线程不能实际提高程序运行效率，只是为了能够在不同的任务之间切换，不同线程轮流使用 cpu ，不至于一个线程总占用 cpu，别的线程没法干活</li>
+<li>多核 cpu 可以并行跑多个线程，但能否提高程序运行效率还是要分情况的<ul>
+<li>有些任务，经过精心设计，将任务拆分，并行执行，当然可以提高程序的运行效率。但不是所有计算任 务都能拆分（参考后文的<code>【阿姆达尔定律】</code>）</li>
+<li>也不是所有任务都需要拆分，任务的目的如果不同，谈拆分和效率没啥意义</li>
+</ul>
+</li>
+<li>IO 操作不占用 cpu，只是我们一般拷贝文件使用的是【阻塞 IO】，这时相当于线程虽然不用 cpu，但需要一 直等待 IO 结束，没能充分利用线程。所以才有后面的【非阻塞 IO】和【异步 IO】优化。</li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://youcyt.ltd">cyt</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://youcyt.ltd/post/java%E5%AD%A6%E4%B9%A0/juc/2.%E8%BF%9B%E7%A8%8B%E4%B8%8E%E7%BA%BF%E7%A8%8B.html">https://youcyt.ltd/post/java学习/juc/2.进程与线程.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://youcyt.ltd" target="_blank">cyt的笔记屋</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/java/">java</a><a class="post-meta__tags" href="/tags/JUC/">JUC</a><a class="post-meta__tags" href="/tags/%E4%B8%AD%E9%97%B4%E4%BB%B6/">中间件</a></div><div class="post-share"><div class="social-share" data-image="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251105130710922.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i>赞助</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wechat.jpg" target="_blank"><img class="post-qr-code-img" src="/img/wechat.jpg" alt="微信"/></a><div class="post-qr-code-desc">微信</div></li><li class="reward-item"><a href="/img/alipay.jpg" target="_blank"><img class="post-qr-code-img" src="/img/alipay.jpg" alt="支付宝"/></a><div class="post-qr-code-desc">支付宝</div></li></ul></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/post/java%E5%AD%A6%E4%B9%A0/juc/3.Java%20%E7%BA%BF%E7%A8%8B.html" title="JUC-3.Java 线程"><img class="cover" src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251105143707988.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">JUC-3.Java 线程</div></div><div class="info-2"><div class="info-item-1">3.Java 线程本章内容 创建和运行线程  查看线程  线程 API  线程状态  3.1 创建和运行线程方法一，直接使用 Thread12345678// 创建线程对象 （匿名内部类）Thread t = new Thread() &#123;    public void run() &#123;        // 要执行的任务    &#125;&#125;;// 启动线程t.start();  例如： 123456789// 构造方法的参数是给线程指定名字，推荐Thread t1 = new Thread(&quot;t1&quot;) &#123;    @Override    // run 方法内实现了要执行的任务    public void run() &#123;        log.debug(&quot;hello&quot;);    &#125;&#125;;t1.start();  输出： 119:19:00 [t1] c.ThreadStarter - hello  方法二，使用 Runnable 配合 Thread把【线程】和【任务】（要执...</div></div></div></a><a class="pagination-related" href="/post/java%E5%AD%A6%E4%B9%A0/jvm/2JVM-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6.html" title="JVM-垃圾回收"><img class="cover" src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251028145205154.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">JVM-垃圾回收</div></div><div class="info-2"><div class="info-item-1">二、垃圾回收1. 如何判断对象可以回收1.1引用计数法 有引用+1 断开引用-1 弊端：循环依赖问题 java未使用该方法  1.2 可达性分析计算法 Java 虚拟机中的垃圾回收器采用可达性分析来探索所有存活的对象   扫描堆中的对象，看是否能够沿着 GC Root对象 为起点的引用链找到该对象，找不到，表示可以 回收   哪些对象可以作为 GC Root ?  类比葡萄串🍇，提起葡萄还在根上的就不能被回收案例：  保存jmap状态   1234567891011❯ jps31112 Main34184 Jps33769 Launcher33770 Demo2_2❯ jmap -dump:format=b,live,file=1.bin 33770Dumping heap to /Users/cyt/workspace/java/jvm-std/jvm/src/cn/itcast/jvm/t2/1.bin ...Heap dump file created❯ jmap -dump:format=b,live,file=2.bin 33770Dumping heap to /U...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/post/java%E5%AD%A6%E4%B9%A0/juc/3.Java%20%E7%BA%BF%E7%A8%8B.html" title="JUC-3.Java 线程"><img class="cover" src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251105143707988.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-11-06</div><div class="info-item-2">JUC-3.Java 线程</div></div><div class="info-2"><div class="info-item-1">3.Java 线程本章内容 创建和运行线程  查看线程  线程 API  线程状态  3.1 创建和运行线程方法一，直接使用 Thread12345678// 创建线程对象 （匿名内部类）Thread t = new Thread() &#123;    public void run() &#123;        // 要执行的任务    &#125;&#125;;// 启动线程t.start();  例如： 123456789// 构造方法的参数是给线程指定名字，推荐Thread t1 = new Thread(&quot;t1&quot;) &#123;    @Override    // run 方法内实现了要执行的任务    public void run() &#123;        log.debug(&quot;hello&quot;);    &#125;&#125;;t1.start();  输出： 119:19:00 [t1] c.ThreadStarter - hello  方法二，使用 Runnable 配合 Thread把【线程】和【任务】（要执...</div></div></div></a><a class="pagination-related" href="/post/java%E5%AD%A6%E4%B9%A0/juc/5.%E5%85%B1%E4%BA%AB%E6%A8%A1%E5%9E%8B%E4%B9%8B%E5%86%85%E5%AD%98.html" title="JUC-5.共享模型之内存"><img class="cover" src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/502df1bc-0c14-465f-8cf9-5ebd6bbad194.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-11-08</div><div class="info-item-2">JUC-5.共享模型之内存</div></div><div class="info-2"><div class="info-item-1">5.共享模型之内存本章内容上一章讲解的Monitor 主要关注的是访问共享变量时，保证临界区代码的原子性这一章我们进一步深入学习共享变量在多线程间的【可见性】问题与多条指令执行时的【有序性】问题 5.1 Java 内存模型JMM 即 Java Memory Model，它定义了主存、工作内存抽象概念，底层对应着 CPU 寄存器、缓存、硬件内存、 CPU 指令优化等。  JMM的意义  计算机硬件底层的内存结构过于复杂，JMM的意义在于避免程序员直接管理计算机底层内存，用一些关键字synchronized、volatile等可以方便的管理内存。  JMM 体现在以下几个方面   原子性 - 保证指令不会受到线程上下文切换的影响  可见性 - 保证指令不会受 cpu 缓存的影响  有序性 - 保证指令不会受 cpu 指令并行优化的影响  5.2 可见性退不出的循环先来看一个现象，main 线程对 run 变量的修改对于 t 线程不可见，导致了 t 线程无法停止： 1234567891011static boolean run = true;public static void mai...</div></div></div></a><a class="pagination-related" href="/post/java%E5%AD%A6%E4%B9%A0/juc/6.%E5%85%B1%E4%BA%AB%E6%A8%A1%E5%9E%8B%E4%B9%8B%E6%97%A0%E9%94%81.html" title="JUC-6.共享模型之无锁"><img class="cover" src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/53eb853d-d676-42f0-b245-9cafa6bd04a9.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-11-10</div><div class="info-item-2">JUC-6.共享模型之无锁</div></div><div class="info-2"><div class="info-item-1">6.共享模型之无锁6.1 问题提出 (应用之互斥)有如下需求，保证 account.withdraw 取款方法的线程安全 123456789101112131415161718192021222324252627282930313233package cn.itcast;import java.util.ArrayList;import java.util.List;interface Account &#123;    // 获取余额    Integer getBalance();    // 取款    void withdraw(Integer amount);    /** * 方法内会启动 1000 个线程，每个线程做 -10 元 的操作 * 如果初始余额为 10000 那么正确的结果应当是 0 */    static void demo(Account account) &#123;        List&lt;Thread&gt; ts = new ArrayList&lt;&gt;();        long start = System.nanoTime...</div></div></div></a><a class="pagination-related" href="/post/java%E5%AD%A6%E4%B9%A0/juc/4.%E5%85%B1%E4%BA%AB%E6%A8%A1%E5%9E%8B%E4%B9%8B%E7%AE%A1%E7%A8%8B.html" title="JUC-4.共享模型之管程"><img class="cover" src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/92229416-d5bd-49cc-8ba4-6ac3106cda70.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-11-07</div><div class="info-item-2">JUC-4.共享模型之管程</div></div><div class="info-2"><div class="info-item-1">4.共享模型之管程本章内容 共享问题  synchronized  线程安全分析  Monitor  wait&#x2F;notify  线程状态转换  活跃性  Lock  4.1共享带来的问题Java代码示例两个线程对初始值为 0 的静态变量一个做自增，一个做自减，各做 5000 次，结果是 0 吗？ 123456789101112131415161718static int counter = 0;public static void main(String[] args) throws InterruptedException &#123;    Thread t1 = new Thread(() -&gt; &#123;        for (int i = 0; i &lt; 5000; i++) &#123;            counter++;        &#125;    &#125;, &quot;t1&quot;);    Thread t2 = new Thread(() -&gt; &#123;        for (int i = 0; ...</div></div></div></a><a class="pagination-related" href="/post/java%E5%AD%A6%E4%B9%A0/%E4%B8%AD%E9%97%B4%E4%BB%B6/rocketMQ%E7%AC%94%E8%AE%B0.html" title="rocketMQ笔记"><img class="cover" src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20250929171632722.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-09</div><div class="info-item-2">rocketMQ笔记</div></div><div class="info-2"><div class="info-item-1">  教学地址：b站 https://www.bilibili.com/video/BV1AU4y157LX   本地使用mq cd /Users/cyt/huanjing/java/middle/rocketmq-all-4.8.0-bin-release sh start.sh  开启mq sh close.sh 关闭mq cd ../web  java -jar rocketmq-console-ng-2.0.0.jar 开启mq控制台   后续使用docker搭建mq   基本知识MQ介绍  对比  介绍  优势和劣势  优势应用解耦  提高系统容错性和可维护性 生产者发送消息到MQ mq可以复制多份到其他系统     异步提速  提升用户体验和系统吞吐量  从下单到结果只需要100ms  先发给mq  存入mysql  后面的200ms不用管          削峰填谷  提高系统稳定性 把mq当做缓存 10w个请求，从mq里面取数据，放入mysql     示意图  劣势  工作原理（重点）  生产者 消费者 服务器三大集群都要去 命名服务器 注册自己的ip信息 消费者...</div></div></div></a><a class="pagination-related" href="/post/java%E5%AD%A6%E4%B9%A0/%E4%B8%AD%E9%97%B4%E4%BB%B6/ElasticSearch%E4%BC%81%E4%B8%9A%E7%BA%A7%E5%BA%94%E7%94%A8%E5%AE%9E%E6%88%98.html" title="ElasticSearch企业级应用实战"><img class="cover" src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20210720194230265.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-21</div><div class="info-item-2">ElasticSearch企业级应用实战</div></div><div class="info-2"><div class="info-item-1">1.初识elasticsearch1.1.了解ES1.1.1.elasticsearch的作用elasticsearch是一款非常强大的开源搜索引擎，具备非常多强大功能，可以帮助我们从海量数据中快速找到需要的内容 例如：  在GitHub搜索代码   在电商网站搜索商品   在百度搜索答案   在打车软件搜索附近的车    1.1.2.ELK技术栈elasticsearch结合kibana、Logstash、Beats，也就是elastic stack（ELK）。被广泛应用在日志数据分析、实时监控等领域：  而elasticsearch是elastic stack的核心，负责存储、搜索、分析数据。  1.1.3.elasticsearch和luceneelasticsearch底层是基于lucene来实现的。 **Lucene**是一个Java语言的搜索引擎类库，是Apache公司的顶级项目，由DougCutting于1999年研发。官网地址：https://lucene.apache.org/ 。  elasticsearch的发展历史：  2004年Shay Banon基于L...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/other/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">cyt</div><div class="author-info-description">归途也还可爱</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">24</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">24</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/yigeyouzia" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="https://blog.csdn.net/c_cjwkwjsnsj" target="_blank" title="CSDN"><i class="fa fa-book-open"></i></a><a class="social-icon" href="tencent://AddContact/?fromId=45&amp;fromSubId=1&amp;subcmd=all&amp;uin=1793402316&amp;website=www.oicqzone.com" target="_blank" title="QQ"><i class="fab fa-qq"></i></a><a class="social-icon" href="mailto:1793402316@qq.com" target="_blank" title="Email"><i class="fas fa-envelope-open-text"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#1-%E6%A6%82%E8%A7%88"><span class="toc-number">1.</span> <span class="toc-text">1. 概览</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%A7%E7%BA%B2"><span class="toc-number">1.1.</span> <span class="toc-text">大纲</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A2%84%E5%A4%87%E7%9F%A5%E8%AF%86"><span class="toc-number">1.2.</span> <span class="toc-text">预备知识</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2-%E8%BF%9B%E7%A8%8B%E4%B8%8E%E7%BA%BF%E7%A8%8B"><span class="toc-number">2.</span> <span class="toc-text">2.进程与线程</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%AC%E7%AB%A0%E5%86%85%E5%AE%B9"><span class="toc-number">2.1.</span> <span class="toc-text">本章内容</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-%E8%BF%9B%E7%A8%8B%E4%B8%8E%E7%BA%BF%E7%A8%8B"><span class="toc-number">2.2.</span> <span class="toc-text">2.1 进程与线程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%9B%E7%A8%8B"><span class="toc-number">2.2.1.</span> <span class="toc-text">进程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B"><span class="toc-number">2.2.2.</span> <span class="toc-text">线程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E8%80%85%E5%AF%B9%E6%AF%94"><span class="toc-number">2.2.3.</span> <span class="toc-text">二者对比</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-%E5%B9%B6%E8%A1%8C%E4%B8%8E%E5%B9%B6%E5%8F%91"><span class="toc-number">2.3.</span> <span class="toc-text">2.2 并行与并发</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-3-%E5%BA%94%E7%94%A8"><span class="toc-number">2.4.</span> <span class="toc-text">2.3 应用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BA%94%E7%94%A8%E4%B9%8B%E5%BC%82%E6%AD%A5%E8%B0%83%E7%94%A8%EF%BC%88%E6%A1%88%E4%BE%8B1%EF%BC%89"><span class="toc-number">2.4.1.</span> <span class="toc-text">应用之异步调用（案例1）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%9C%80%E8%A6%81%E7%AD%89%E5%BE%85%E7%BB%93%E6%9E%9C"><span class="toc-number">2.4.1.1.</span> <span class="toc-text">需要等待结果</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#Future-%E5%AE%9E%E7%8E%B0%EF%BC%88%E5%90%8C%E6%AD%A5%EF%BC%89"><span class="toc-number">2.4.1.1.1.</span> <span class="toc-text">Future 实现（同步）</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89%E5%AE%9E%E7%8E%B0%EF%BC%88%E5%90%8C%E6%AD%A5%EF%BC%89"><span class="toc-number">2.4.1.1.2.</span> <span class="toc-text">自定义实现（同步）</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#CompletableFuture-%E5%AE%9E%E7%8E%B0%EF%BC%88%E5%BC%82%E6%AD%A5%EF%BC%89"><span class="toc-number">2.4.1.1.3.</span> <span class="toc-text">CompletableFuture 实现（异步）</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#BlockingQueue-%E5%AE%9E%E7%8E%B0%EF%BC%88%E5%BC%82%E6%AD%A5%EF%BC%89"><span class="toc-number">2.4.1.1.4.</span> <span class="toc-text">BlockingQueue 实现（异步）</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%8D%E9%9C%80%E7%AD%89%E5%BE%85%E7%BB%93%E6%9E%9C"><span class="toc-number">2.4.1.2.</span> <span class="toc-text">不需等待结果</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%99%AE%E9%80%9A%E7%BA%BF%E7%A8%8B%E5%AE%9E%E7%8E%B0"><span class="toc-number">2.4.1.2.1.</span> <span class="toc-text">普通线程实现</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B%E6%B1%A0%E5%AE%9E%E7%8E%B0"><span class="toc-number">2.4.1.2.2.</span> <span class="toc-text">线程池实现</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#CompletableFuture-%E5%AE%9E%E7%8E%B0"><span class="toc-number">2.4.1.2.3.</span> <span class="toc-text">CompletableFuture 实现</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BA%94%E7%94%A8%E4%B9%8B%E6%8F%90%E9%AB%98%E6%95%88%E7%8E%87%EF%BC%88%E6%A1%88%E4%BE%8B1%EF%BC%89"><span class="toc-number">2.4.2.</span> <span class="toc-text">应用之提高效率（案例1）</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-%E8%AE%BE%E8%AE%A1"><span class="toc-number">2.4.2.0.1.</span> <span class="toc-text">1.设计</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-%E7%BB%93%E8%AE%BA"><span class="toc-number">2.4.2.0.2.</span> <span class="toc-text">2.结论</span></a></li></ol></li></ol></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/post/java%E5%AD%A6%E4%B9%A0/juc/6.%E5%85%B1%E4%BA%AB%E6%A8%A1%E5%9E%8B%E4%B9%8B%E6%97%A0%E9%94%81.html" title="JUC-6.共享模型之无锁"><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/53eb853d-d676-42f0-b245-9cafa6bd04a9.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="JUC-6.共享模型之无锁"/></a><div class="content"><a class="title" href="/post/java%E5%AD%A6%E4%B9%A0/juc/6.%E5%85%B1%E4%BA%AB%E6%A8%A1%E5%9E%8B%E4%B9%8B%E6%97%A0%E9%94%81.html" title="JUC-6.共享模型之无锁">JUC-6.共享模型之无锁</a><time datetime="2025-11-09T16:00:00.000Z" title="发表于 2025-11-10 00:00:00">2025-11-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/java%E5%AD%A6%E4%B9%A0/juc/5.%E5%85%B1%E4%BA%AB%E6%A8%A1%E5%9E%8B%E4%B9%8B%E5%86%85%E5%AD%98.html" title="JUC-5.共享模型之内存"><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/502df1bc-0c14-465f-8cf9-5ebd6bbad194.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="JUC-5.共享模型之内存"/></a><div class="content"><a class="title" href="/post/java%E5%AD%A6%E4%B9%A0/juc/5.%E5%85%B1%E4%BA%AB%E6%A8%A1%E5%9E%8B%E4%B9%8B%E5%86%85%E5%AD%98.html" title="JUC-5.共享模型之内存">JUC-5.共享模型之内存</a><time datetime="2025-11-07T16:00:00.000Z" title="发表于 2025-11-08 00:00:00">2025-11-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/java%E5%AD%A6%E4%B9%A0/juc/4.%E5%85%B1%E4%BA%AB%E6%A8%A1%E5%9E%8B%E4%B9%8B%E7%AE%A1%E7%A8%8B.html" title="JUC-4.共享模型之管程"><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/92229416-d5bd-49cc-8ba4-6ac3106cda70.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="JUC-4.共享模型之管程"/></a><div class="content"><a class="title" href="/post/java%E5%AD%A6%E4%B9%A0/juc/4.%E5%85%B1%E4%BA%AB%E6%A8%A1%E5%9E%8B%E4%B9%8B%E7%AE%A1%E7%A8%8B.html" title="JUC-4.共享模型之管程">JUC-4.共享模型之管程</a><time datetime="2025-11-06T16:00:00.000Z" title="发表于 2025-11-07 00:00:00">2025-11-07</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/java%E5%AD%A6%E4%B9%A0/juc/3.Java%20%E7%BA%BF%E7%A8%8B.html" title="JUC-3.Java 线程"><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251105143707988.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="JUC-3.Java 线程"/></a><div class="content"><a class="title" href="/post/java%E5%AD%A6%E4%B9%A0/juc/3.Java%20%E7%BA%BF%E7%A8%8B.html" title="JUC-3.Java 线程">JUC-3.Java 线程</a><time datetime="2025-11-05T16:00:00.000Z" title="发表于 2025-11-06 00:00:00">2025-11-06</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/java%E5%AD%A6%E4%B9%A0/juc/2.%E8%BF%9B%E7%A8%8B%E4%B8%8E%E7%BA%BF%E7%A8%8B.html" title="JUC-2.进程与线程"><img src="https://picgo-1314714026.cos.ap-nanjing.myqcloud.com/img/image-20251105130710922.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="JUC-2.进程与线程"/></a><div class="content"><a class="title" href="/post/java%E5%AD%A6%E4%B9%A0/juc/2.%E8%BF%9B%E7%A8%8B%E4%B8%8E%E7%BA%BF%E7%A8%8B.html" title="JUC-2.进程与线程">JUC-2.进程与线程</a><time datetime="2025-11-04T16:00:00.000Z" title="发表于 2025-11-05 00:00:00">2025-11-05</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2023 - 2025 By cyt</span></div><div class="footer_custom_text"><img src="https://haiyong.site/img/icp.png"><a href="https://beian.miit.gov.cn/#/Integrated/index"  style="color:white" target="_blank">蜀ICP备2023010926号</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><div class="js-pjax"><script>(() => {
+  const abcjsInit = () => {
+    const abcjsFn = () => {
+      setTimeout(() => {
+        const sheets = document.querySelectorAll(".abc-music-sheet")
+        for (let i = 0; i < sheets.length; i++) {
+          const ele = sheets[i]
+          if (ele.children.length > 0) continue
+
+          // Parse parameters from data-params attribute
+          let params = {}
+          const dp = ele.getAttribute("data-params")
+          if (dp) {
+            try {
+              params = JSON.parse(dp)
+            } catch (e) {
+              console.error("Failed to parse data-params:", e)
+            }
+          }
+
+          // Merge parsed parameters with the responsive option
+          // Ensures params content appears before responsive
+          const options = { ...params, responsive: "resize" }
+
+          // Render the music score using ABCJS.renderAbc
+          ABCJS.renderAbc(ele, ele.innerHTML, options)
+        }
+      }, 100)
+    }
+
+    if (typeof ABCJS === "object") {
+      abcjsFn()
+    } else {
+      btf.getScript("https://cdn.jsdelivr.net/npm/abcjs/dist/abcjs-basic-min.min.js").then(abcjsFn)
+    }
+  }
+
+  if (window.pjax) {
+    abcjsInit()
+  } else {
+    window.addEventListener("load", abcjsInit)
+  }
+
+  btf.addGlobalFn("encrypt", abcjsInit, "abcjs")
+})()</script></div><canvas class="fireworks" mobile="true"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-nest.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
